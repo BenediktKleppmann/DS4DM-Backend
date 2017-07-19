@@ -1,4 +1,4 @@
-package de.uni_mannheim.informatik.dws.ds4dm.CreateCorrespondenceFiles;
+package de.uni_mannheim.informatik.dws.ds4dm.CreateCorrespondences;
 
 
 import java.io.File;
