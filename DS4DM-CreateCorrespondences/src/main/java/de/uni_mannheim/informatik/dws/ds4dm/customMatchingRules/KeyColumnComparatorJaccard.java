@@ -6,9 +6,7 @@ import de.uni_mannheim.informatik.additionalWinterClasses.MatchableTableRow;
 import de.uni_mannheim.informatik.dws.winter.matching.rules.Comparator;
 import de.uni_mannheim.informatik.dws.winter.model.Correspondence;
 import de.uni_mannheim.informatik.dws.winter.model.Matchable;
-import de.uni_mannheim.informatik.dws.winter.model.defaultmodel.Attribute;
 import de.uni_mannheim.informatik.dws.winter.similarity.string.TokenizingJaccardSimilarity;
-import de.uni_mannheim.informatik.dws.winter.usecase.movies.model.Movie;
 
 /**
  * {@link Comparator} for finding instance-matches between {@link Table}s 

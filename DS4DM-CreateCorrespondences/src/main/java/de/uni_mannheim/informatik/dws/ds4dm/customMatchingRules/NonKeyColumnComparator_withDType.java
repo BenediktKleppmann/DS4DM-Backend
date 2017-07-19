@@ -1,9 +1,5 @@
 package de.uni_mannheim.informatik.dws.ds4dm.customMatchingRules;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.joda.time.DateTime;
 
 import de.uni_mannheim.informatik.additionalWinterClasses.MatchableTableColumn;
@@ -14,13 +10,10 @@ import de.uni_mannheim.informatik.dws.winter.matrices.SparseSimilarityMatrixFact
 import de.uni_mannheim.informatik.dws.winter.matrices.matcher.BestChoiceMatching;
 import de.uni_mannheim.informatik.dws.winter.model.Correspondence;
 import de.uni_mannheim.informatik.dws.winter.model.Matchable;
-import de.uni_mannheim.informatik.dws.winter.model.defaultmodel.Attribute;
 import de.uni_mannheim.informatik.dws.winter.preprocessing.datatypes.DataType;
 import de.uni_mannheim.informatik.dws.winter.similarity.date.NormalisedDateSimilarity;
 import de.uni_mannheim.informatik.dws.winter.similarity.numeric.DeviationSimilarity;
 import de.uni_mannheim.informatik.dws.winter.similarity.string.TokenizingJaccardSimilarity;
-import de.uni_mannheim.informatik.dws.winter.usecase.movies.model.Movie;
-import weka.core.pmml.jaxbbindings.DATATYPE;
 
 
 

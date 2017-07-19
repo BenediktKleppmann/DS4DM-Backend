@@ -2,12 +2,8 @@ package de.uni_mannheim.informatik.dws.ds4dm.CreateLuceneIndex;
 
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -20,10 +16,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
-import com.opencsv.CSVReader;
-
 import de.uni_mannheim.informatik.dws.winter.webtables.Table;
-import de.uni_mannheim.informatik.dws.winter.webtables.TableColumn;
 import de.uni_mannheim.informatik.dws.winter.webtables.TableRow;
 import de.uni_mannheim.informatik.dws.winter.webtables.detectors.TableHeaderDetectorContentBased;
 import de.uni_mannheim.informatik.dws.winter.webtables.detectors.TableKeyIdentification;
