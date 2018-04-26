@@ -106,21 +106,41 @@ public class SearchForTablesX {
 					Document doc = indexSearcher.doc(hits[i].doc);
 					double schemaSimilarityScore = hits[i].score;
 					candidateTableNames.put(doc.getFields("tableHeader")[0].stringValue(), schemaSimilarityScore);
-					System.out.println("found: " + doc.getFields("tableHeader")[0].stringValue());
+					System.out.println("found for ("+ keyColumnName +"): " + doc.getFields("tableHeader")[0].stringValue());
 					
 					String tablename = doc.getFields("tableHeader")[0].stringValue();
 					String extensionAtttributeColumnIndex = doc.getFields("columnindex")[0].stringValue();
 					extensionAttributePositions.put(tablename, extensionAtttributeColumnIndex);
 				    
 				}
+				
+				System.out.println("numberOfHits = " + String.valueOf(hits.length));
 		}
+		
+		System.out.println("numberOfFoundTables = " + String.valueOf(candidateTableNames.size()));
+		
 		
 		// save the extensionAttributePositions to a json-file to avoid the error-prone schema-matching later
 		Gson gson = new Gson();
 		String extensionAttributePositions_string = gson.toJson(extensionAttributePositions, HashMap.class);
-		try(  PrintWriter out = new PrintWriter("public/repositories/" + repositoryName + "/extensionAttributePositions/" + keyColumnName +".json" )  ){
-		    out.println( extensionAttributePositions_string );
-		}
+		
+		String extensionAttributePositionsFilePath = "public/repositories/" + repositoryName + "/extensionAttributePositions/" + keyColumnName +".json";
+		File extensionAttributePositionsFile = new File(extensionAttributePositionsFilePath);
+        try {
+    		extensionAttributePositionsFile.createNewFile();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        try {
+            PrintWriter pw = new PrintWriter(extensionAttributePositionsFile);
+            pw.println(extensionAttributePositions_string);
+            pw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+		
+
+
 		
 		return candidateTableNames; 
 	}

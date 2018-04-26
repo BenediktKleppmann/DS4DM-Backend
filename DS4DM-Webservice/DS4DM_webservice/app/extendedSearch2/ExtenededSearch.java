@@ -62,10 +62,12 @@ public class ExtenededSearch extends Controller {
 
 	
 	public Result extendedSearch(String repositoryName) {
+		System.out.println("extendedSearch");
 		
 		GlobalVariables globalVariables = new GlobalVariables("public/globalVariables.conf");
 		
 		Gson gson = new Gson();	
+		System.out.println(request().body().asJson().toString());
 		model.QueryTable queryTable = gson.fromJson(request().body().asJson().toString(), model.QueryTable.class);
 		globalVariables.setQueryTable(queryTable);
 		globalVariables.setRepositoryName(repositoryName);

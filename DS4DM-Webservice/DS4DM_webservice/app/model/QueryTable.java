@@ -177,6 +177,9 @@ public class QueryTable {
 			ColumnDataType type = tctg.guessTypeForColumn(columnValues, columnHeader, false, null);
 			dataTypes.put(columnHeader, type.toString());
 		}
+		
+		
+		dataTypes.put(extensionAttributes[0], "string");
 		return dataTypes;
 	}
 	

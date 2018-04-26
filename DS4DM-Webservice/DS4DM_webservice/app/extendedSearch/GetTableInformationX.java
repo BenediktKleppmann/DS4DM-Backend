@@ -68,7 +68,7 @@ public class GetTableInformationX {
 		        for (int i = 0; i < hits.length; i++) {
 		        	Document doc = isearcher.doc(hits[i].doc);
 		        	
-		        	//get values	        
+		        	//get values	
 		        	String columnHeader = doc.getFields("columnHeader")[0].stringValue();
 		        	String  id_string = doc.getFields("id")[0].stringValue();
 		        	Integer id = Math.round(Float.parseFloat(id_string));
@@ -90,7 +90,6 @@ public class GetTableInformationX {
 		        ireader.close();
 		        directory.close();
 	
-		        
 		        //--- Deduce Some Further Values -------------------
 		        String[][] relation = convertEntriesToRelation(entries, maxRow);
 	
@@ -112,6 +111,7 @@ public class GetTableInformationX {
 				String[] filesHeaders = filesHeadersString.split(",");
 				String foundExtensionColumnName =filesHeaders[Integer.valueOf(extensionAttributePosition)].toLowerCase().replace("\"", "").replace(".", "");
 				extensionAttributePosition = String.valueOf(Arrays.asList(columnHeaders).indexOf(foundExtensionColumnName));
+
 			
 //				System.out.println("^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v");
 //				System.out.println("^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v^v");
@@ -128,8 +128,9 @@ public class GetTableInformationX {
 		        
 		        
 				// Get instancesCorrespondences2QueryTable ----------------  
-		        Map<String, Correspondence> instancesCorrespondences2QueryTable = new HashMap<String, Correspondence>();;
+		        Map<String, Correspondence> instancesCorrespondences2QueryTable = new HashMap<String, Correspondence>();
 		        if (new_instancesCorrespondences2QueryTable==null){
+		        	
 					for (int i = 1; i < keyColumn.length; i++) {
 						
 						
@@ -137,6 +138,11 @@ public class GetTableInformationX {
 							String foundTableValue = keyColumn[i];
 							foundTableValue = foundTableValue.toLowerCase();
 
+							System.out.println("---Subject Column Values -------------------------------------");
+							for(String subjectColumn_value :matcher.getSubjectsFromQueryTable()){System.out.print(subjectColumn_value + ", ");}
+							System.out.println("---found key Column Values -------------------------------------");
+							for(String foundKeyColumn_value :keyColumn){System.out.print(foundKeyColumn_value + ", ");}
+							System.out.println("-------------------------- -------------------------------------");
 							
 							if (matcher.getSubjectsFromQueryTable().contains(foundTableValue)) {
 								String matched = Integer.toString(matcher.getSubjectsFromQueryTable().indexOf(foundTableValue) + 1);       // here subjectsFromQueryTable have the first row removed (as it's the header) so need to +1 on the index
@@ -150,6 +156,8 @@ public class GetTableInformationX {
 						} catch (NullPointerException e) {}
 
 					}
+					
+					System.out.println("new instances Correspondences " + String.valueOf(instancesCorrespondences2QueryTable.size()));
 		        } else {
 		        	instancesCorrespondences2QueryTable = new_instancesCorrespondences2QueryTable;
 //		        	System.out.println("corresponding table has instance-matches =  " +  String.valueOf(!instancesCorrespondences2QueryTable.isEmpty()) + "");
@@ -157,12 +165,18 @@ public class GetTableInformationX {
 		        
 				// Save MetaDataTable in JSON-file  -----------------------------------------
 				// and Add instancesCorrespondences2QueryTable to the TableInformation
+		        System.out.println("saving Meta Data Table1");
 		        if (!instancesCorrespondences2QueryTable.isEmpty()) {
+		        	System.out.println("saving Meta Data Table2");
 					tm_ds4dm.setInstancesCorrespondences2QueryTable(instancesCorrespondences2QueryTable);
+					System.out.println("saving Meta Data Table3");
 					saveMetaDataTable(instancesCorrespondences2QueryTable, matcher, relation, tableName, columnHeaders, keyColumn, keyColumnIndex, tableScore, dataSource, repositoryName);
 					
 		        }
 		        else { return null; } // if there weren't any corresponding instances between the query table and the candidateTable, then don't add the candidateTablet othe relevant_tables
+		        System.out.println("getting table info7");
+		        System.out.println("1originally found table: " + tableName);
+		        if (tm_ds4dm != null) System.out.println("2originally found table: " + tableName);
 		        
 		        return tm_ds4dm;
 		    }
@@ -224,6 +238,7 @@ public class GetTableInformationX {
 	 
 		public static void saveMetaDataTable(Map<String, Correspondence> instancesCorrespondences2QueryTable, DS4DMBasicMatcherX matcher, String[][] relation, String tableName, String[] columnHeaders, String[] keyColumn, Integer keyColumnIndex, double tableScore, DataSource dataSource, String repositoryName) throws IOException 
 		{
+			System.out.println("saving Meta Data Table4");
 			Date lastModified = new Date(System.currentTimeMillis());
 			
 			
@@ -267,7 +282,8 @@ public class GetTableInformationX {
 			t_sab.setKeyColumnIndex(indexCol);
 			
 			
-			//t_sab.setRelation			
+			//t_sab.setRelation		
+			System.out.println("saving Meta Data Table5");
 			List<List<String>> new_relation = new ArrayList<List<String>>();
 
 			for(int columnNumber =0; columnNumber < relation.length; columnNumber++){
@@ -292,13 +308,16 @@ public class GetTableInformationX {
 			
 
 //			-------------------------------------------------------------------------------------------------------------------
+			System.out.println("saving Meta Data Table6");
 			ReadWriteGson<JSONTableResponse> resp = new ReadWriteGson<JSONTableResponse>(t_sab);
 			
 			File fetchedTablesFolder = new File("public/repositories/" + repositoryName + "/fetchedTables");
 			if (!fetchedTablesFolder.exists())
 				fetchedTablesFolder.mkdirs();
 			File current_table = new File(fetchedTablesFolder.getAbsolutePath() + "/" + tableName);
+			System.out.println("saving Meta Data Table7");
 			resp.writeJson(current_table);
+			System.out.println("saving Meta Data Table8");
 		}
 
 		
