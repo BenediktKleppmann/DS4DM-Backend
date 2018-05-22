@@ -5,9 +5,9 @@ The DS4DM-Backend is a webservice which works in conjunction with the <a href="h
 
 ## Installation/Setup
 <ol>
-  <li>download this github repository
-  <li>make sure that the is in folder with Java.exe is in the Path
-  <li>open the a terminal and execute:<br>
+  <li>Download this GitHub repository
+  <li>Make sure that the is in folder with Java.exe is in the Path environment variable
+  <li>Open the a terminal and execute:<br>
     <table frame="box">
       <tr>
         <th>
