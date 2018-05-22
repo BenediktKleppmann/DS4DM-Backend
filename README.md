@@ -17,7 +17,7 @@ The DS4DM-Backend is a webservice which works in conjunction with the <a href="h
       </tr>
     </table><br>
    <li>In your RapidMiner-process you now set url-Parameter of the Data Search operator to "http://localhost:9004".<br>
-     <img class="img-responsive" src="http://web.informatik.uni-mannheim.de/ds4dm/images/Set_URL_in_Data_Search_operator.png" alt="keyword-based search" height="1800" width="700" align="middle"  style="display: block; margin-left:auto; margin-right: auto;z-index: 1;">  
+     <img class="img-responsive" src="http://web.informatik.uni-mannheim.de/ds4dm/images/Set_URL_in_Data_Search_operator.png" alt="keyword-based search" height="450" width="900" align="middle"  style="display: block; margin-left:auto; margin-right: auto;z-index: 1;">  
 </ol>
 <br>
 
