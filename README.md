@@ -11,7 +11,7 @@ The DS4DM-Backend is a webservice which works in conjunction with the <a href="h
     <table frame="box">
       <tr>
         <th>
-          cd <i>&lt;path_to_downloaded_folder&gt;<i>/DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice<br>
+          cd <i>&lt;path_to_downloaded_folder&gt;</i>/DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice<br>
           java -Xms1024m -Xmx1024m -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=256m -jar activator-launch-1.2.12.jar "run -Dhttp.port=9004"
         </th>
       </tr>
