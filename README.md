@@ -24,8 +24,8 @@ The DS4DM-Backend is a webservice which works in conjunction with the <a href="h
 ## Other Resources:
 <ul>
   <li><a href="http://ds4dm.de/">Official DS4DM website</a>
-  <li><a href="http://web.informatik.uni-mannheim.de/ds4dm/">website for the DSDM Backend</a>
-  <li><a href="http://dws.informatik.uni-mannheim.de/en/projects/ds4dm-data-search-for-data-mining/">website from Mannheim University</a>
+  <li><a href="http://web.informatik.uni-mannheim.de/ds4dm/">Website for the DSDM Backend</a>
+  <li><a href="http://dws.informatik.uni-mannheim.de/en/projects/ds4dm-data-search-for-data-mining/">Website from Mannheim University</a>
 </ul>
 
 
