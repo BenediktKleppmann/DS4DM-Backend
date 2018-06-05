@@ -3,7 +3,6 @@ DS4DM_core/target
 DS4DM_dataModel/target
 DS4DM_Preprocessing/target
 DS4DM_search/target
-DS4DM_webservice/target
 .settings
 .classpath
 .project
