@@ -8,7 +8,7 @@ The DS4DM-Backend is a webservice which works in conjunction with the <a href="h
   <li>Download this GitHub repository
   <li> Go to the releases page (https://github.com/BenediktKleppmann/DS4DM-Backend/releases) and download the three jar-files: "CreateCorrespondenceFiles-0.0.1-SNAPSHOT.jar", "CreateLuceneIndex-0.0.1-SNAPSHOT-jar-with-dependencies.jar" and "winter-1.0-jar-with-dependencies.jar". <br>
     Copy them to the following location in the downloaded GitHub repository: DS4DM-Backend\DS4DM-Webservice\DS4DM_webservice\lib
-  <li>Make sure that the is in folder with Java.exe is in the Path environment variable
+  <li>Make sure that the environment variable JAVA_HOME points to a jdk_8... -folder
   <li>Open the a terminal and execute:<br>
     <table frame="box">
       <tr>

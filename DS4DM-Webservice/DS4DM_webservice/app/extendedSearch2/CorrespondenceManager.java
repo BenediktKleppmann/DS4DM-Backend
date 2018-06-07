@@ -38,6 +38,7 @@ import model.ExtendedTableInformation;
 public class CorrespondenceManager {
 	
 	
+	
 	public static Map.Entry<Map<String, ExtendedTableInformation>, Map<String, ExtendedTableInformation>>  findIndirectMatches(Map<String, ExtendedTableInformation> directlyFoundTables, GlobalVariables globalVariables) throws IOException, ConcurrentModificationException {
 		
 		Map<String, ExtendedTableInformation> indirectlyFoundTables = new HashMap<String, ExtendedTableInformation>();
