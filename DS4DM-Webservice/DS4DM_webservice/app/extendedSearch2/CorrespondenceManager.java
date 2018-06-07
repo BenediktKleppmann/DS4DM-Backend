@@ -1,10 +1,22 @@
-package extendedSearch2;
+/*
+ * Copyright (c) 2018 Data and Web Science Group, University of Mannheim, Germany (http://dws.informatik.uni-mannheim.de/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
+ */
+ package extendedSearch2;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.AbstractMap;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -12,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
-import javafx.util.Pair;
 
 import com.google.gson.Gson;
 import com.rapidminer.extension.json.Correspondence;
@@ -27,7 +38,7 @@ import model.ExtendedTableInformation;
 public class CorrespondenceManager {
 	
 	
-	public static Pair<Map<String, ExtendedTableInformation>, Map<String, ExtendedTableInformation>>  findIndirectMatches(Map<String, ExtendedTableInformation> directlyFoundTables, GlobalVariables globalVariables) throws IOException, ConcurrentModificationException {
+	public static Map.Entry<Map<String, ExtendedTableInformation>, Map<String, ExtendedTableInformation>>  findIndirectMatches(Map<String, ExtendedTableInformation> directlyFoundTables, GlobalVariables globalVariables) throws IOException, ConcurrentModificationException {
 		
 		Map<String, ExtendedTableInformation> indirectlyFoundTables = new HashMap<String, ExtendedTableInformation>();
 		Map<String, ExtendedTableInformation> directlyFoundTables_updated = new HashMap<String, ExtendedTableInformation>();
@@ -63,7 +74,7 @@ public class CorrespondenceManager {
 	    	}
 	    	directlyFoundTables_updated.put(directlyFoundTable.getTableName(), directlyFoundTable);
 		}
-		return new Pair<Map<String, ExtendedTableInformation>, Map<String, ExtendedTableInformation>> (directlyFoundTables_updated, indirectlyFoundTables);
+		return new AbstractMap.SimpleEntry<Map<String, ExtendedTableInformation>, Map<String, ExtendedTableInformation>> (directlyFoundTables_updated, indirectlyFoundTables);
 	}
 	
 	
