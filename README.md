@@ -3,9 +3,7 @@
 The DS4DM-Backend is a webservice which works in conjunction with the <a href="https://community.rapidminer.com/t5/Community-Blog/The-Data-Search-for-Data-Mining-Extension-Release/ba-p/38231">Data Search for Data Mining (DS4DM) RapidMiner Extension</a>. The memory-intensive and processing-intensive functionalities of the DS4DM RapidMiner Extension have been outsourced to the DS4DM Backend. This includes various Data Searches, Data pre-processing functions, Data Repository management functions,... - for more informatioin, please refer to the <a href="http://web.informatik.uni-mannheim.de/ds4dm/">website of the DSDM Backend</a>.<br>
 <br>
 
-## Setup
-
-###Option 1 - Installing on a computer
+## Setup Option 1 - Installing on a computer
 <ol>
   <li>Download this GitHub repository
   <li> Go to the releases page (https://github.com/BenediktKleppmann/DS4DM-Backend/releases) and download the three jar-files: "CreateCorrespondenceFiles-0.0.1-SNAPSHOT.jar", "CreateLuceneIndex-0.0.1-SNAPSHOT-jar-with-dependencies.jar" and "winter-1.0-jar-with-dependencies.jar". <br>
@@ -25,7 +23,7 @@ The DS4DM-Backend is a webservice which works in conjunction with the <a href="h
 </ol>
 <br>
 
-###Option 2 - Running a virtual machine
+## Setup Option 2 - Running a virtual machine
 <ol>
   <li>From the <a href="https://drive.google.com/drive/u/2/folders/10FXg3QIXJXtIux78sqlpsGhKbNd6VVkp">Project's Google Drive repository</a> download the virtual machine image 'Ubuntu Server 16.04.4 (32bit).vdi'
   <li>Launch the virtual machine
