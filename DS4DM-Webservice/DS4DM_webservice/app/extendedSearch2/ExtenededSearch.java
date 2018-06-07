@@ -54,7 +54,6 @@ import extendedSearch.SearchForTablesX;
 import model.ExtendedTableInformation;
 import model.QueryTable;
 import extendedSearch.GetTableInformationX.DataSource;
-import javafx.util.Pair;
 import play.mvc.Controller;
 import play.mvc.Result;
 
@@ -114,7 +113,7 @@ public class ExtenededSearch extends Controller {
 		
 		
 		// GET THE INDIRECT MATCHES  ----------------------------
-		Pair<Map<String, ExtendedTableInformation>, Map<String, ExtendedTableInformation>> foundTables = null; 
+		Map.Entry<Map<String, ExtendedTableInformation>, Map<String, ExtendedTableInformation>> foundTables = null; 
 		try {	
 			foundTables =  CorrespondenceManager.findIndirectMatches(directlyFoundTables, globalVariables);
 		} catch (IOException e) { e.printStackTrace();}
