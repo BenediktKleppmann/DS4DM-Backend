@@ -3,6 +3,8 @@ DS4DM_core/target
 DS4DM_dataModel/target
 DS4DM_Preprocessing/target
 DS4DM_search/target
+DS4DM_webservice/project/target/node-modules/webjars/npm/node_modules/request/node_modules/form-data/node_modules/combined-stream/node_modules/delayed-stream/test/integration/test-delayed-http-upload.js
 .settings
 .classpath
 .project
+.gitignore

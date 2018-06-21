@@ -27,14 +27,34 @@
 			<version>3.3</version>
 		</dependency>
 		<dependency>
-			<groupId>de.uni_mannheim.informatik.dws</groupId>
-			<artifactId>winter</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
 		    <groupId>commons-io</groupId>
 		    <artifactId>commons-io</artifactId>
 		    <version>2.5</version>
+		</dependency>
+		<dependency>
+		    <groupId>joda-time</groupId>
+		    <artifactId>joda-time</artifactId>
+		    <version>2.3</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.lucene</groupId>
+		    <artifactId>lucene-core</artifactId>
+		    <version>4.6.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-analyzers-common</artifactId>
+			<version>4.6.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-queryparser</artifactId>
+			<version>4.6.0</version>
+		</dependency>
+		<dependency>
+			<groupId>de.uni_mannheim.informatik.dws</groupId>
+			<artifactId>winter</artifactId>
+			<version>1.0</version>
 		</dependency>
 	</dependencies>
 	
@@ -55,7 +75,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>de.uni_mannheim.informatik.dws.ds4dm.CreateCorrespondenceFiles.Main</mainClass>
+							<mainClass>de.uni_mannheim.informatik.dws.ds4dm.CreateCorrespondences.Main_withKnownBlocking</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
