@@ -52,9 +52,6 @@ The maven-project is structured according to the Java-Play-framework-guidelines.
 The File DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice/conf/routes specifies the API calls that are possible and which methods these call. The majority of the called methods are in the class DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice/app/controllers/ExtendTable.java. (All of the executed code is in the folder DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice/app).
 The DS4DM-Webservices uses repositories of tables. These repositories are in the folder DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice/public/repositories. Each repository has one folder containing csv-tables, one folder containing Indexes and another folder containing Correspondences, as well as a file with repository statistics.
 
-
-### DS4DM-WebtableExtraction
-
 ### Evaluation tables
 This isn't a backend component, but a collection of the csv files that were used for the evaluations. For more information on the evaluations, please refer to http://web.informatik.uni-mannheim.de/ds4dm/#evaluation.
 
