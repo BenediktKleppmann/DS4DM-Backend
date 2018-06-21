@@ -3,6 +3,7 @@
 The DS4DM-Backend is a webservice which works in conjunction with the <a href="https://community.rapidminer.com/t5/Community-Blog/The-Data-Search-for-Data-Mining-Extension-Release/ba-p/38231">Data Search for Data Mining (DS4DM) RapidMiner Extension</a>. The memory-intensive and processing-intensive functionalities of the DS4DM RapidMiner Extension have been outsourced to the DS4DM Backend. This includes various Data Searches, Data pre-processing functions, Data Repository management functions,... - for more informatioin, please refer to the <a href="http://web.informatik.uni-mannheim.de/ds4dm/">website of the DSDM Backend</a>.<br>
 <br>
 
+
 ## Setup Option 1 - Installing on a computer
 <ol>
   <li>Download this GitHub repository
@@ -23,6 +24,7 @@ The DS4DM-Backend is a webservice which works in conjunction with the <a href="h
 </ol>
 <br>
 
+
 ## Setup Option 2 - Running a virtual machine
 <ol>
   <li>From the <a href="https://drive.google.com/drive/u/2/folders/10FXg3QIXJXtIux78sqlpsGhKbNd6VVkp">Project's Google Drive repository</a> download the virtual machine image 'Ubuntu Server 16.04.4 (32bit).vdi'
@@ -39,6 +41,7 @@ The DS4DM-Backend is a webservice which works in conjunction with the <a href="h
 		</table><br>
 </ol>
 
+
 ## Technical description of the Backend components
 ### DS4DM-CreateCorrespondences
 This backend component contains methods for finding/creating correspondences between tables. These methods are used by DS4DM-Webservice (the main backend component). For this the CreateCorrespondenceFiles-maven-project is compiled into a jar-file. The jar file with dependencies is saved to the folder DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice/lib/ and added to the Build Path of the DS4DM_webservice-maven-project
@@ -54,6 +57,7 @@ The DS4DM-Webservices uses repositories of tables. These repositories are in the
 
 ### Evaluation tables
 This isn't a backend component, but a collection of the csv files that were used for the evaluations. For more information on the evaluations, please refer to http://web.informatik.uni-mannheim.de/ds4dm/#evaluation.
+
 
 
 ## Other Resources:
