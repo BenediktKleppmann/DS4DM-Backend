@@ -39,6 +39,26 @@ The DS4DM-Backend is a webservice which works in conjunction with the <a href="h
 		</table><br>
 </ol>
 
+## Technical description of the Backend components
+### DS4DM-CreateCorrespondences
+This backend component contains methods for finding/creating correspondences between tables. These methods are used by DS4DM-Webservice (the main backend component). For this the CreateCorrespondenceFiles-maven-project is compiled into a jar-file. The jar file with dependencies is saved to the folder DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice/lib/ and added to the Build Path of the DS4DM_webservice-maven-project
+
+### DS4DM-CreateLuceneIndex
+This backend component contains methods for indexing tables. These methods are also used by the DS4DM-Webservice. As with CreateCorrespondences, the CreateLuceneIndex-maven-project is compiled to a jar file and the jar file with dependencies is saved to DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice/lib/, from where it is included in the Build Path of DS4DM_webservice.
+
+### DS4DM-Webservice
+This is the main Backend component. 
+The maven-project is structured according to the Java-Play-framework-guidelines. This allows the program activator-launch-1.2.12.jar to provide an API endpoint which calls various methods in this backend component.
+The File DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice/conf/routes specifies the API calls that are possible and which methods these call. The majority of the called methods are in the class DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice/app/controllers/ExtendTable.java. (All of the executed code is in the folder DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice/app).
+The DS4DM-Webservices uses repositories of tables. These repositories are in the folder DS4DM-Backend/DS4DM-Webservice/DS4DM_webservice/public/repositories. Each repository has one folder containing csv-tables, one folder containing Indexes and another folder containing Correspondences, as well as a file with repository statistics.
+
+
+### DS4DM-WebtableExtraction
+
+### Evaluation tables
+This isn't a backend component, but a collection of the csv files that were used for the evaluations. For more information on the evaluations, please refer to http://web.informatik.uni-mannheim.de/ds4dm/#evaluation.
+
+
 ## Other Resources:
 <ul>
   <li><a href="http://ds4dm.de/">Official DS4DM website</a>
