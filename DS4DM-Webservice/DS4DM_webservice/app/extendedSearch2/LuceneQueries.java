@@ -1,4 +1,15 @@
-package extendedSearch2;
+/*
+ * Copyright (c) 2018 Data and Web Science Group, University of Mannheim, Germany (http://dws.informatik.uni-mannheim.de/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
+ */
+ package extendedSearch2;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,7 +66,7 @@ public class LuceneQueries {
 		QueryParser queryParser = new QueryParser(Version.LUCENE_46, "value", new StandardAnalyzer(Version.LUCENE_46));
 
 
-		//==============================    GET THE TABLEINAMES	 ===========================================================	
+		//==============================    GET THE TABLENAMES	 ===========================================================	
 		Map<String, ExtendedTableInformation> directlyFoundTables = new HashMap<String, ExtendedTableInformation>();
 			
 		String queryString = globalVariables.getQueryTable().getExtensionAttribute();
@@ -91,19 +102,17 @@ public class LuceneQueries {
 				int numResults = 1000;
 				if (globalVariables.getQueryTable().getMaximalNumberOfTables()>0)   numResults = globalVariables.getQueryTable().getMaximalNumberOfTables();
 				
-				
-				do {
-					hits = indexSearcher.search(constrainedQuery, numResults).scoreDocs;
-					numResults *= 10;		
-				} while (hits.length > 0 && (hits[0].score == hits[hits.length - 1].score) && numResults < 1000000 && numResults > 0);  // check if all the scores are the same; if yes, retrieve more documents
-				
-				
+
+				hits = indexSearcher.search(constrainedQuery, numResults).scoreDocs;
+
+				System.out.println("numResults = " + java.lang.Math.min(hits.length,numResults));
+				System.out.println("numResults = " + numResults);
 				
 				//get the Table Information ----------------------
-				for (int i = 0; i < hits.length; i++) {
+				for (int i = 0; i < java.lang.Math.min(hits.length,numResults); i++) {
 					Document doc = indexSearcher.doc(hits[i].doc);
 					
-					System.out.println("found: " + doc.getFields("tableHeader")[0].stringValue());
+					System.out.println("found" + String.valueOf(i) + ": " + doc.getFields("tableHeader")[0].stringValue());
 					ExtendedTableInformation foundTable = new ExtendedTableInformation();
 					foundTable.setTableName(doc.getFields("tableHeader")[0].stringValue());
 					foundTable.setSchemaSimilarityScore((double) hits[i].score);
@@ -193,6 +202,7 @@ public class LuceneQueries {
 				normalizedTargetSchema = globalVariables.getQueryTable().getNormalizedTargetSchema().toArray(normalizedTargetSchema);
 		        System.out.println("Query-Table Schema = " + Arrays.toString(normalizedTargetSchema));
 		        table.setTableSchema2TargetSchema(determineTableSchema2TargetSchema(table, globalVariables));
+		        
 		        //get Instance Matches
 		        table.setInstancesCorrespondences2QueryTable(determineInstancesCorrespondences2QueryTable(table, globalVariables));
 		        
@@ -267,7 +277,7 @@ public class LuceneQueries {
 	
 	
 	
-	public static Map<String, Correspondence> determineTableSchema2TargetSchema(ExtendedTableInformation table, GlobalVariables globalVariables) throws IOException{
+	public static Map<String, Correspondence> determineTableSchema2TargetSchema(ExtendedTableInformation table, GlobalVariables globalVariables) {
 		
 		System.out.println("getting schema-matches for: " + table.getTableName() + " -  " + Arrays.toString(table.getColumnHeaders()));
 		//PART1 - Determine the schema-matches through string equality
@@ -304,21 +314,28 @@ public class LuceneQueries {
 		}
 		if (extensionAttributePosition != null && !extensionAttributePosition.isEmpty() && !extensionAttributeMatched){
 			
-			//Part2.1 - correct the extensionAttributePosition, according to the csv-file (in the index the columns got jumbled)
-			System.out.println("extensionAttributePosition2 " + table.getTableName() );
-			BufferedReader fileReader = new BufferedReader(new FileReader("public/repositories/" + globalVariables.getRepositoryName() + "/tables/" + table.getTableName()));
-			String filesHeadersString = fileReader.readLine();
-			String[] filesHeaders = filesHeadersString.split(",");
-			String foundExtensionColumnName =filesHeaders[Integer.valueOf(extensionAttributePosition)].toLowerCase().replace("\"", "").replace(".", "");
-			extensionAttributePosition = String.valueOf(Arrays.asList(columnHeaders).indexOf(foundExtensionColumnName));
-			fileReader.close();
-			
-			//Part2.2 - the acctural overwriting
-			if (extensionAttributePosition != null && !extensionAttributePosition.isEmpty() && Integer.valueOf(extensionAttributePosition) > 0){
-				double confidence = 1; 
-				tableSchema2TargetSchema.put(extensionAttributePosition + "_" + columnHeaders[Integer.valueOf(extensionAttributePosition)],  new Correspondence(globalVariables.getQueryTable().getExtensionAttribute(), confidence));
-				System.out.println("extensionAttributePosition3: " + table.getTableName() + " - FT:" + extensionAttributePosition + "_" + columnHeaders[Integer.valueOf(extensionAttributePosition)] + " <--> QT: " +  globalVariables.getQueryTable().getExtensionAttribute() );
-			}
+			try{
+				//Part2.1 - correct the extensionAttributePosition, according to the csv-file (in the index the columns got jumbled)
+				System.out.println("extensionAttributePosition2 " + table.getTableName() );
+				
+				
+				BufferedReader fileReader = new BufferedReader(new FileReader(globalVariables.getTablesFolderPath() + table.getTableName()));
+				String filesHeadersString = fileReader.readLine();
+				String[] filesHeaders = filesHeadersString.split(",");
+				String foundExtensionColumnName =filesHeaders[Integer.valueOf(extensionAttributePosition)].toLowerCase().replace("\"", "").replace(".", "");
+				extensionAttributePosition = String.valueOf(Arrays.asList(columnHeaders).indexOf(foundExtensionColumnName));
+				fileReader.close();
+				
+				//Part2.2 - the acctural overwriting
+				if (extensionAttributePosition != null && !extensionAttributePosition.isEmpty() && Integer.valueOf(extensionAttributePosition) > 0){
+					double confidence = 1; 
+					tableSchema2TargetSchema.put(extensionAttributePosition + "_" + columnHeaders[Integer.valueOf(extensionAttributePosition)],  new Correspondence(globalVariables.getQueryTable().getExtensionAttribute(), confidence));
+					System.out.println("extensionAttributePosition3: " + table.getTableName() + " - FT:" + extensionAttributePosition + "_" + columnHeaders[Integer.valueOf(extensionAttributePosition)] + " <--> QT: " +  globalVariables.getQueryTable().getExtensionAttribute() );
+				}
+			} catch (IOException e){
+				System.out.println("!!Table not found: " + globalVariables.getTablesFolderPath() + table.getTableName());
+				e.printStackTrace();
+				}
 		}
 		
         return tableSchema2TargetSchema;

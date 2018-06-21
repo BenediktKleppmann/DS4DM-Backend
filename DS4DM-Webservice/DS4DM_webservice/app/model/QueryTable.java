@@ -1,4 +1,15 @@
-package model;
+/*
+ * Copyright (c) 2018 Data and Web Science Group, University of Mannheim, Germany (http://dws.informatik.uni-mannheim.de/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
+ */
+ package model;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -22,7 +33,10 @@ public class QueryTable {
 	
 	private String[] extensionAttributes;
 	private String correlationAttribute;
-	private Double mimimumDensity; 
+	private Double minimumDensity; 
+	private Double minimumCorrelation; 
+	private Double minimumKeyColumnSimilarity;
+	private Double minimumInstanceSimilarity;
 	private String keyColumnIndex;
 	private Integer maximalNumberOfTables;
 	private String[][] queryTable;
@@ -62,18 +76,41 @@ public class QueryTable {
 		return this.correlationAttribute;
 	}
 	
-	//mimimumDensity --------------------------------------------
-	public void setMimimumDensity(Double mimimumDensity){
-		this.mimimumDensity = mimimumDensity;
+	//minimumDensity --------------------------------------------
+	public void setMinimumDensity(Double minimumDensity){
+		this.minimumDensity = minimumDensity;
 	}
 	
-	public Double getMimimumDensity(){
-		return this.mimimumDensity;
+	public Double getMinimumDensity(){
+		return this.minimumDensity;
 	}
 	
+	//minimumCorrelation ---------------------------------------------
+	public void setMinimumCorrelation(Double minimumCorrelation){
+		this.minimumCorrelation = minimumCorrelation;
+	}
 	
+	public Double getMinimumCorrelation(){
+		return this.minimumCorrelation;
+	}
 	
+	//minimumKeyColumnSimilarity ---------------------------------------------
+	public void setMinimumKeyColumnSimilarity(Double minimumKeyColumnSimilarity){
+		this.minimumKeyColumnSimilarity = minimumKeyColumnSimilarity;
+	}
 	
+	public Double getMinimumKeyColumnSimilarity(){
+		return this.minimumKeyColumnSimilarity;
+	}
+	
+	//minimumInstanceSimilarity ---------------------------------------------
+	public void setMinimumInstanceSimilarity(Double minimumInstanceSimilarity){
+		this.minimumInstanceSimilarity = minimumInstanceSimilarity;
+	}
+	
+	public Double getMinimumInstanceSimilarity(){
+		return this.minimumInstanceSimilarity;
+	}
 	//keyColumnIndex --------------------------------------------
 	public void setKeyColumnIndex(String keyColumnIndex){
 		this.keyColumnIndex = keyColumnIndex;
@@ -172,10 +209,11 @@ public class QueryTable {
 		
 			List<String> columnValues = new ArrayList<>(Arrays.asList(column));
 			String columnHeader = columnValues.get(0);
-			columnValues.remove(0);
 
+			columnValues.remove(0);
 			ColumnDataType type = tctg.guessTypeForColumn(columnValues, columnHeader, false, null);
 			dataTypes.put(columnHeader, type.toString());
+
 		}
 		
 		

@@ -1,4 +1,15 @@
-package extendedSearch2;
+/*
+ * Copyright (c) 2018 Data and Web Science Group, University of Mannheim, Germany (http://dws.informatik.uni-mannheim.de/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
+ */
+ package extendedSearch2;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,25 +36,25 @@ import model.ExtendedTableInformation;
 
 public class StringNormalization {
 	
-	private CSVReader reader;
-	private IndexSearcher indexSearcher;
+//	private CSVReader reader;
+//	private IndexSearcher indexSearcher;
 	
 	
 	
-	public StringNormalization(){
-		try {
-//			String redirectsFilePath = "C:/Users/UNI-Mannheim/Documents/DS4DM_backend/ds4dm_webservice/DS4DM/DS4DM_webservice/public/exampleData/redirects.tsv";
-//			reader = new CSVReader(new FileReader(redirectsFilePath), '\t');
-		   
-			
-			
-	 		String indexPath = "C:/Users/UNI-Mannheim/Documents/Test Scripts/useful stuff/Data/Redirects & Surface forms/RedirectsIndex";
-	 		Directory dir = FSDirectory.open(new File(indexPath));
-			IndexReader indexReader = DirectoryReader.open(dir);
-			this.indexSearcher = new IndexSearcher(indexReader);
-		} catch (Exception e) {e.printStackTrace();		}	
-		
-	}
+//	public StringNormalization(){
+//		try {
+////			String redirectsFilePath = "C:/Users/UNI-Mannheim/Documents/DS4DM_backend/ds4dm_webservice/DS4DM/DS4DM_webservice/public/exampleData/redirects.tsv";
+////			reader = new CSVReader(new FileReader(redirectsFilePath), '\t');
+//		   
+//			
+//			
+//	 		String indexPath = "C:/Users/UNI-Mannheim/Documents/Test Scripts/useful stuff/Data/Redirects & Surface forms/RedirectsIndex";
+//	 		Directory dir = FSDirectory.open(new File(indexPath));
+//			IndexReader indexReader = DirectoryReader.open(dir);
+//			this.indexSearcher = new IndexSearcher(indexReader);
+//		} catch (Exception e) {e.printStackTrace();		}	
+//		
+//	}
 	
 
 	
@@ -83,37 +94,33 @@ public class StringNormalization {
  	}
  	
  	
- 	public String standardizeWordingWithRedirects(String myString){
- 		
- 		try {
- 		QueryParser queryParser = new QueryParser(Version.LUCENE_46, "redirectSource", new StandardAnalyzer(Version.LUCENE_46));
- 		Query query = queryParser.parse(myString);
-
-
- 		ScoreDoc[] hits = indexSearcher.search(query, 10).scoreDocs;
-
-
-	 		if (hits != null){
-				for (ScoreDoc hit: hits) {
-					Document doc = this.indexSearcher.doc(hit.doc);
-					
-					String redirectSource = doc.getFields("redirectSource")[0].stringValue();
-					String redirectTarget = doc.getFields("redirectTarget")[0].stringValue();
-					
-					if (myString.contains(redirectSource)){
-						myString = myString.replace(redirectSource, redirectTarget);
-					}
-				}
-	 		}
-
- 		} catch (ParseException | IOException e) {}
-			
- 		
- 		
-
- 		
- 		return myString;
- 	}
+// 	public String standardizeWordingWithRedirects(String myString){
+// 		
+// 		try {
+// 		QueryParser queryParser = new QueryParser(Version.LUCENE_46, "redirectSource", new StandardAnalyzer(Version.LUCENE_46));
+// 		Query query = queryParser.parse(myString);
+//
+//
+// 		ScoreDoc[] hits = indexSearcher.search(query, 10).scoreDocs;
+//
+//
+//	 		if (hits != null){
+//				for (ScoreDoc hit: hits) {
+//					Document doc = this.indexSearcher.doc(hit.doc);
+//					
+//					String redirectSource = doc.getFields("redirectSource")[0].stringValue();
+//					String redirectTarget = doc.getFields("redirectTarget")[0].stringValue();
+//					
+//					if (myString.contains(redirectSource)){
+//						myString = myString.replace(redirectSource, redirectTarget);
+//					}
+//				}
+//	 		}
+//
+// 		} catch (ParseException | IOException e) {}
+//			
+// 		return myString;
+// 	}
  	
 
 }

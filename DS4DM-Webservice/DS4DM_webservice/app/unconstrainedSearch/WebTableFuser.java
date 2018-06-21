@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Data and Web Science Group, University of Mannheim, Germany (http://dws.informatik.uni-mannheim.de/)
+ * Copyright (c) 2018 Data and Web Science Group, University of Mannheim, Germany (http://dws.informatik.uni-mannheim.de/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -11,20 +11,32 @@
  */
 package unconstrainedSearch;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+
+import com.opencsv.CSVWriter;
 
 import de.uni_mannheim.informatik.dws.winter.datafusion.AttributeFuser;
 import de.uni_mannheim.informatik.dws.winter.datafusion.CorrespondenceSet;
 import de.uni_mannheim.informatik.dws.winter.datafusion.DataFusionEngine;
 import de.uni_mannheim.informatik.dws.winter.datafusion.DataFusionStrategy;
 import de.uni_mannheim.informatik.dws.winter.datafusion.EvaluationRule;
-import de.uni_mannheim.informatik.dws.winter.datafusion.conflictresolution.Voting;
+//import de.uni_mannheim.informatik.dws.winter.datafusion.conflictresolution.Voting;
 import de.uni_mannheim.informatik.dws.winter.model.Correspondence;
+import de.uni_mannheim.informatik.dws.winter.model.DataSet;
 import de.uni_mannheim.informatik.dws.winter.model.FusibleDataSet;
 import de.uni_mannheim.informatik.dws.winter.model.Matchable;
+import de.uni_mannheim.informatik.dws.winter.model.RecordGroup;
 import de.uni_mannheim.informatik.dws.winter.processing.Processable;
 import de.uni_mannheim.informatik.dws.winter.webtables.Table;
 import de.uni_mannheim.informatik.dws.winter.webtables.TableRow;
+import tests.SaveCorrespondencesToCsv;
+import tests.SaveTableToCsv;
+import unconstrainedSearch.Voting.Voting;
+import unconstrainedSearch.Voting.Voting2;
 import uploadTable.additionalWinterClasses.MatchableTableColumn;
 import uploadTable.additionalWinterClasses.MatchableTableRow;
 import uploadTable.additionalWinterClasses.MatchableTableRowFactory;
@@ -44,10 +56,16 @@ public class WebTableFuser {
 			Processable<Correspondence<MatchableTableRow, Matchable>> recordCorrespondences) throws IOException {
 		
 		
+
+//		SaveCorrespondencesToCsv.save(recordCorrespondences, "recordCorrespondences");
+//		SaveTableToCsv.save(consolidatedSchema, "consolidatedSchema");
+//		SaveTableToCsv.save(queryDS, "queryDS");
+//		SaveTableToCsv.save(tablesDS, "tablesDS");
+		
 		DataFusionStrategy<MatchableTableRow, MatchableTableColumn> fusionStrategy = new DataFusionStrategy<>(new MatchableTableRowFactory());
 		
 		for(MatchableTableColumn c : queryDS.getSchema().get()) {
-			AttributeFuser<MatchableTableRow, MatchableTableColumn> fuser = new WebTableValueFuser(new Voting<>(), c);
+			AttributeFuser<MatchableTableRow, MatchableTableColumn> fuser = new WebTableValueFuser(new Voting2<>(), c);
 			
 			EvaluationRule<MatchableTableRow, MatchableTableColumn> rule = new WebTableFusionEvaluationRule();
 			
@@ -57,11 +75,16 @@ public class WebTableFuser {
 		DataFusionEngine<MatchableTableRow, MatchableTableColumn> fusion = new DataFusionEngine<>(fusionStrategy);
 	
 		CorrespondenceSet<MatchableTableRow, MatchableTableColumn> correspondences = new CorrespondenceSet<>();
-		correspondences.createFromCorrespondences(recordCorrespondences, queryDS, tablesDS);
+		correspondences.createFromCorrespondences(recordCorrespondences, queryDS, tablesDS);		
+		SaveCorrespondencesToCsv.save(correspondences, "correspondences");
 		
 		FusibleDataSet<MatchableTableRow, MatchableTableColumn> fused = fusion.run(correspondences, null);
 		
+//		SaveTableToCsv.save(fused, "fused");
+	     
 		Table result = consolidatedSchema.copySchema();
+			
+//		SaveTableToCsv.save(result, "result2");
 		
 		int rowNumber = 0;
 		for(MatchableTableRow r : fused.get()) {
@@ -69,6 +92,10 @@ public class WebTableFuser {
 			row.set(r.getValues());
 			result.addRow(row);
 		}
+			
+//		SaveTableToCsv.save(result, "result1");
+
+		
 		
 		return result;
 	}

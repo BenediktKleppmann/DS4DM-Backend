@@ -1,6 +1,18 @@
-package unconstrainedSearch;
+/*
+ * Copyright (c) 2018 Data and Web Science Group, University of Mannheim, Germany (http://dws.informatik.uni-mannheim.de/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
+ */
+ package unconstrainedSearch;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,24 +37,37 @@ import de.uni_mannheim.informatik.dws.winter.webtables.TableColumn;
 import de.uni_mannheim.informatik.dws.winter.webtables.TableRow;
 import de.uni_mannheim.informatik.dws.winter.webtables.parsers.CsvTableParser;
 import de.uni_mannheim.informatik.dws.winter.webtables.parsers.TableFactory;
+import tests.CsvTableParser_keepCase;
+import tests.SaveTableToCsv;
 import uploadTable.additionalWinterClasses.MatchableTableColumn;
 import uploadTable.additionalWinterClasses.MatchableTableRow;
 import uploadTable.additionalWinterClasses.WebTableDataSetLoader;
 
 public class UnconstrainedSearch {
 
+	
 	public static Table getFusedTable(model.QueryTable queryTableObject, String repositoryName){
 		
 		queryTableObject.saveToFile("public/exampleData/temp_query_table.csv");
 		CsvTableParser csvtableparser = new CsvTableParser();
 		Table queryTable = csvtableparser.parseTable(new File("public/exampleData/temp_query_table.csv"));
 		
+		// TESTING  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+		SaveTableToCsv.save(queryTable, "queryTable");
+		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+		
 		Table fused = null;
 		
 		// get keyColumnIndex
-		Integer keyColumnIndex = Integer.parseInt(queryTableObject.getKeyColumnIndex());
-		if (keyColumnIndex == null || keyColumnIndex < 0){
+		String keyColumnIndexStr = queryTableObject.getKeyColumnIndex();
+		
+		
+		Integer keyColumnIndex = null;
+		if (keyColumnIndexStr == null || keyColumnIndexStr.equals("")){
 			keyColumnIndex = queryTable.getSubjectColumnIndex();
+		} else{
+			keyColumnIndex = Integer.parseInt(keyColumnIndexStr);
+			if (keyColumnIndex<0) keyColumnIndex = queryTable.getSubjectColumnIndex();
 		}
 		
 		/*******************************************************
@@ -93,6 +118,10 @@ public class UnconstrainedSearch {
 			FusibleDataSet<MatchableTableRow, MatchableTableColumn> queryDS = loader.createQueryDataSet(queryTable);
 			FusibleDataSet<MatchableTableRow, MatchableTableColumn> tablesDS = loader.createTablesDataSet(tables);
 			
+			// TESTING  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+			SaveTableToCsv.save(queryDS, "queryDS");
+			// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+			
 			// run schema matching
 			WebTableMatcher matcher = new WebTableMatcher();
 			Processable<Correspondence<MatchableTableColumn, Matchable>> schemaCorrespondences = null;
@@ -100,10 +129,7 @@ public class UnconstrainedSearch {
 				schemaCorrespondences = matcher.matchSchemas(queryDS, tablesDS);
 			} catch (Exception e) {e.printStackTrace();}
 			// get the ids of all tables in the search result that could be matched
-			Set<Integer> matchedTables = new HashSet<>(schemaCorrespondences.map(
-					(Correspondence<MatchableTableColumn, Matchable> cor, DataIterator<Integer> c)
-						-> c.next(new Integer(cor.getSecondRecord().getTableId()))).distinct().get()
-					);
+			Set<Integer> matchedTables = new HashSet<>(schemaCorrespondences.map((Correspondence<MatchableTableColumn, Matchable> cor, DataIterator<Integer> c)-> c.next(new Integer(cor.getSecondRecord().getTableId()))).distinct().get());
 			
 			// remove unmatched tables
 			Processable<MatchableTableColumn> attributes = tablesDS.getSchema().where(((c)->matchedTables.contains(c.getTableId())));
@@ -116,12 +142,13 @@ public class UnconstrainedSearch {
 			// transform query table and result tables into the consolidated schema
 			attributes = queryDS.getSchema().append(attributes);
 			SearchJoinSchemaConsolidator consolidator = new SearchJoinSchemaConsolidator(tablesById);
-			Pair<Table, Table> consolidated = consolidator.consolidate(queryDS, tablesDS, attributes, schemaCorrespondences);
+			Pair<Table, Table> consolidated = consolidator.consolidate(queryDS, tablesDS, attributes, schemaCorrespondences, queryTable);
 
 			if(consolidated!=null) {
 			
 				Table queryConsolidated = consolidated.getFirst();
 				Table tablesConsolidated = consolidated.getSecond();
+				
 				
 				// set the subject column to the column that was the subject column in the query table
 				for(TableColumn c: queryConsolidated.getSchema().getRecords()) {
@@ -146,8 +173,14 @@ public class UnconstrainedSearch {
 				queryDS = loader.createQueryDataSet(queryConsolidated);
 				tablesDS = loader.createQueryDataSet(tablesConsolidated);
 				
+				// TESTING  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+				SaveTableToCsv.save(queryDS, "queryDS2");
+				// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+				
 				// run identity resolution
-				Processable<Correspondence<MatchableTableRow, Matchable>> recordCorrespondences = matcher.matchRecords(queryDS, tablesDS);
+				Double minimumInstanceSimilarity = queryTableObject.getMinimumInstanceSimilarity();
+				if (minimumInstanceSimilarity == null) minimumInstanceSimilarity = 0.9;
+				Processable<Correspondence<MatchableTableRow, Matchable>> recordCorrespondences = matcher.matchRecords(queryDS, tablesDS, minimumInstanceSimilarity);
 
 				// make sure that no two records from the query table are mapped to the same record in a result table
 				// the result would be that these records are merged in the final result
@@ -166,9 +199,71 @@ public class UnconstrainedSearch {
 				WebTableFuser fuser = new WebTableFuser();
 				
 				try {
-					fused = fuser.fuseTables(queryConsolidated, queryDS, tablesDS, recordCorrespondences);		
-					fused = consolidator.removeSparseColumns(fused, 0.1);  // remove columns that are mostly NULL
+								
+					fused = fuser.fuseTables(queryConsolidated, queryDS, tablesDS, recordCorrespondences);	
+						
+					// TESTING  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+					SaveTableToCsv.save(fused, "fused");
+					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+					
+					Double minimumDensity = queryTableObject.getMinimumDensity();
+					if (minimumDensity==null){minimumDensity= 0.6;}
+					fused = consolidator.removeSparseColumns(fused, minimumDensity);  // remove columns that are mostly NULL
+					
+					// TESTING  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+					SaveTableToCsv.save(fused, "fused2");
+					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+					
 				} catch (Exception e) {e.printStackTrace();}
+				
+				
+				/*******************************************************
+				 *  COPY THE COLUMNS FROM THE TABLE
+				 *******************************************************/
+				
+				// Schema matching
+				Map<String, Integer> qtColumnIndexes = new HashMap<String, Integer>();
+				CsvTableParser_keepCase csvtableparser_keepCase = new CsvTableParser_keepCase();
+				Table queryTable_keepCase = csvtableparser_keepCase.parseTable(new File("public/exampleData/temp_query_table.csv"));
+				for (TableColumn column: queryTable_keepCase.getColumns()){
+					qtColumnIndexes.put(column.getHeader(), column.getColumnIndex());
+				}
+				
+				
+				// Instance Matching
+				Map<Integer, Integer> instanceMatches = new HashMap<Integer, Integer>();
+				for (TableRow fusedRow: fused.getRows()){
+					for (TableRow queryRow: queryTable_keepCase.getRows()){
+						if (fusedRow.get(fused.getSubjectColumnIndex()).toString().equalsIgnoreCase(queryRow.get(queryTable_keepCase.getSubjectColumnIndex()).toString())){
+							System.out.println("Matching rows " + String.valueOf(fusedRow.getRowNumber()) + " " + String.valueOf(queryRow.getRowNumber()) + ": " + fusedRow.get(fused.getSubjectColumnIndex()) + " <--> " + queryRow.get(queryTable_keepCase.getSubjectColumnIndex()));
+							instanceMatches.put(fusedRow.getRowNumber(), queryRow.getRowNumber());
+						}
+					}
+				}
+				
+							
+				for (TableColumn fusedColumn: fused.getColumns()){
+					
+					Integer qtColumnIndex = null;
+					for (String qtheader :qtColumnIndexes.keySet()){
+						if (qtheader.equalsIgnoreCase(fusedColumn.getHeader())) qtColumnIndex = qtColumnIndexes.get(qtheader);
+					}
+					
+					if (qtColumnIndex!= null){
+						// Insert the column values from the query table
+						for (TableRow fusedRow: fused.getRows()){
+							int queryTableRowNumber = instanceMatches.get(fusedRow.getRowNumber());
+							Object new_value = queryTable_keepCase.get(queryTableRowNumber).get(qtColumnIndex);
+							fusedRow.set(fusedColumn.getColumnIndex(), new_value);
+						}
+						
+						// Insert the original header from the query table
+						fusedColumn.setHeader(queryTable_keepCase.getSchema().get(qtColumnIndex).getHeader());
+						
+					}
+				}
+				
+					
 				
 			}
 			
@@ -185,7 +280,7 @@ public class UnconstrainedSearch {
 	
 	
 	
-	public static Table removeSparselyPopulatedColumns(Table fused, Double mimimumDensity){
+	public static Table removeSparselyPopulatedColumns(Table fused, Double minimumDensity){
 		// initialize numberOfNullsDict  
 		Map<Integer, Pair<Integer, Integer>> numberOfNullsDict = new HashMap<Integer, Pair<Integer, Integer>>();
 		for (int columnIndex = 0; columnIndex< fused.getSchema().getSize(); columnIndex ++){
@@ -206,7 +301,7 @@ public class UnconstrainedSearch {
 		//filter out the columns with too low density
 		for (int columnIndex = 0; columnIndex< fused.getSchema().getSize(); columnIndex ++){
 			Double density = ((double) numberOfNullsDict.get(columnIndex).getFirst())/ ((double) numberOfNullsDict.get(columnIndex).getSecond());
-			if (density < mimimumDensity) fused.removeColumn(fused.getSchema().get(columnIndex));
+			if (density < minimumDensity) fused.removeColumn(fused.getSchema().get(columnIndex));
 		}
 		
 		return fused;

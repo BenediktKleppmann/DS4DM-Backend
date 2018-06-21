@@ -16,18 +16,18 @@ POST /suggestAttributes 			controllers.ExtendTable.suggestAttributes()
 
 # table search related functions
 POST /old_search 					controllers.ExtendTable.search()
-# POST /search 						controllers.ExtendTable.extendedSearch(repository)
+POST /search 						controllers.ExtendTable.extendedSearch(repository)
 # POST /search 						controllers.ExtendTable.extendedSearch_Produktdata()
 # POST /search 						controllers.ExtendTable.PreCalculatedSearch()
 POST /unconstrainedSearch 			controllers.ExtendTable.unconstrainedSearch(repository)
-POST /search 						controllers.ExtendTable.extendedSearch_T2DGoldstandard()
+POST /extendedSearch 				extendedSearch2.ExtenededSearch.extendedSearch(repository)
 # POST /extendedSearch 				controllers.ExtendTable.extendedSearch(repository)
 
 POST /correlationBasedSearch        controllers.ExtendTable.correlationBasedSearch(repository)
 
 
-GET /fetchTable  					controllers.ExtendTable.fetchTable_T2DGoldstandard(name)
-# GET /fetchTable  					controllers.ExtendTable.fetchTable(name, repository)
+# GET /fetchTable  					controllers.ExtendTable.fetchTable_T2DGoldstandard(name)
+GET /fetchTable  					controllers.ExtendTable.fetchTable(name, repository)
 
 
 POST /fetchTablePOST  				controllers.ExtendTable.fetchTablePOST(repositoryName)
@@ -37,11 +37,7 @@ POST /createRepository				controllers.ExtendTable.createRepository(repository)
 GET /createRepository				controllers.ExtendTable.createRepository(repository)
 POST /uploadTable 					controllers.ExtendTable.uploadTable(repository)
 POST /bulkUploadTables              controllers.ExtendTable.moderateBulkUploadTables(repository)
-POST /generateCorrespondences       controllers.ExtendTable.generateCorrespondences(repository)
 POST /deleteRepository				controllers.ExtendTable.deleteRepository(repository)
 
 POST /getUploadStatus   			controllers.ExtendTable.getUploadStatus(repository, uploadID)
-
-POST /test1 							controllers.ExtendTable.Test1()
-POST /test2 							controllers.ExtendTable.Test2()
 

@@ -4,7 +4,7 @@
 		module="ds4dm_webservice-build"
 		revision="0.1-SNAPSHOT"
 		status="integration"
-		publication="20180605153604"
+		publication="20170510135816"
 		e:sbtVersion="0.13" e:scalaVersion="2.10"
 	>
 		<description>

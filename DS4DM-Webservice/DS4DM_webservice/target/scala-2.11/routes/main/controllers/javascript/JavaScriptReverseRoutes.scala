@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
-// @SOURCE:C:/Users/UNI-Mannheim/Documents/DS4DM_backend3/DS4DM-Webservice/DS4DM_webservice/conf/routes
-// @DATE:Sun May 20 19:48:13 CEST 2018
+// @SOURCE:C:/Users/UNI-Mannheim/Documents/DS4DM_backend/ds4dm_webservice/DS4DM/DS4DM_webservice/conf/routes
+// @DATE:Wed Mar 28 11:05:28 CEST 2018
 
 import play.api.routing.JavaScriptReverseRoute
 import play.api.mvc.{ QueryStringBindable, PathBindable, Call, JavascriptLiteral }
@@ -23,22 +23,22 @@ package controllers.javascript {
     }
 
   
+    // @LINE:19
+    def extendedSearch: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ExtendTable.extendedSearch",
+      """
+        function(repository) {
+          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "search" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("repository", repository)])})
+        }
+      """
+    )
+  
     // @LINE:33
     def fetchTablePOST: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ExtendTable.fetchTablePOST",
       """
         function(repositoryName) {
           return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "fetchTablePOST" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("repositoryName", repositoryName)])})
-        }
-      """
-    )
-  
-    // @LINE:45
-    def Test1: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ExtendTable.Test1",
-      """
-        function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "test1"})
         }
       """
     )
@@ -63,47 +63,7 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:29
-    def fetchTable_T2DGoldstandard: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ExtendTable.fetchTable_T2DGoldstandard",
-      """
-        function(name) {
-          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "fetchTable" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("name", name)])})
-        }
-      """
-    )
-  
-    // @LINE:23
-    def extendedSearch_T2DGoldstandard: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ExtendTable.extendedSearch_T2DGoldstandard",
-      """
-        function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "search"})
-        }
-      """
-    )
-  
     // @LINE:40
-    def generateCorrespondences: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ExtendTable.generateCorrespondences",
-      """
-        function(repository) {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "generateCorrespondences" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("repository", repository)])})
-        }
-      """
-    )
-  
-    // @LINE:46
-    def Test2: JavaScriptReverseRoute = JavaScriptReverseRoute(
-      "controllers.ExtendTable.Test2",
-      """
-        function() {
-          return _wA({method:"POST", url:"""" + _prefix + { _defaultPrefix } + """" + "test2"})
-        }
-      """
-    )
-  
-    // @LINE:41
     def deleteRepository: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ExtendTable.deleteRepository",
       """
@@ -167,7 +127,17 @@ package controllers.javascript {
       """
     )
   
-    // @LINE:43
+    // @LINE:30
+    def fetchTable: JavaScriptReverseRoute = JavaScriptReverseRoute(
+      "controllers.ExtendTable.fetchTable",
+      """
+        function(name,repository) {
+          return _wA({method:"GET", url:"""" + _prefix + { _defaultPrefix } + """" + "fetchTable" + _qS([(""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("name", name), (""" + implicitly[QueryStringBindable[String]].javascriptUnbind + """)("repository", repository)])})
+        }
+      """
+    )
+  
+    // @LINE:42
     def getUploadStatus: JavaScriptReverseRoute = JavaScriptReverseRoute(
       "controllers.ExtendTable.getUploadStatus",
       """

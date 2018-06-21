@@ -1,4 +1,15 @@
-package extendedSearch2;
+/*
+ * Copyright (c) 2018 Data and Web Science Group, University of Mannheim, Germany (http://dws.informatik.uni-mannheim.de/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
+ */
+ package extendedSearch2;
 
 
 import java.io.File;
@@ -21,6 +32,8 @@ public class GlobalVariables {
 	private Boolean logFoundTables;
 	
 	private String logFolderPath;
+	
+	private String tablesFolderPath;
 	
 	
 
@@ -49,7 +62,10 @@ public class GlobalVariables {
 		
 		final String theRepositoryName =  temporaryObject.getRepositoryName();
 		
-		if (temporaryObject.getRepositoryName()!= null) this.repositoryName = temporaryObject.getRepositoryName();
+		if (temporaryObject.getRepositoryName()!= null) {
+			this.repositoryName = temporaryObject.getRepositoryName();
+			this.tablesFolderPath = "public/repositories/" + temporaryObject.getRepositoryName() + "/tables/";
+		}
 		else  this.repositoryName = "DefaultRepository";
 		
 		if (temporaryObject.getColumnNameIndexPath() != null) this.columnNameIndexPath = temporaryObject.getColumnNameIndexPath();
@@ -68,6 +84,7 @@ public class GlobalVariables {
 	
 	public void setRepositoryName(String repositoryName){
 		this.repositoryName = repositoryName;
+		this.tablesFolderPath = "public/repositories/" + repositoryName + "/tables/";
 		
 		if (this.columnNameIndexPath.equals("public/repositories/DefaultRepository/indexes/ColumnNameIndex"))
 			this.columnNameIndexPath = "public/repositories/" + repositoryName + "/indexes/ColumnNameIndex";
@@ -112,6 +129,15 @@ public class GlobalVariables {
 	
 	public void setLogFolderPath(String logFolderPath){
 		this.logFolderPath = logFolderPath;
+	}
+	
+	// tablesFolderPath -------------------------------
+	public String getTablesFolderPath(){
+		return this.tablesFolderPath;
+	}
+	
+	public void setTablesFolderPath(String tablesFolderPath){
+		this.tablesFolderPath = tablesFolderPath;
 	}
 	
 	

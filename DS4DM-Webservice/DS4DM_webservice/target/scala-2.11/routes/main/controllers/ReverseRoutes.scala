@@ -1,7 +1,7 @@
 
 // @GENERATOR:play-routes-compiler
-// @SOURCE:C:/Users/UNI-Mannheim/Documents/DS4DM_backend3/DS4DM-Webservice/DS4DM_webservice/conf/routes
-// @DATE:Sun May 20 19:48:13 CEST 2018
+// @SOURCE:C:/Users/UNI-Mannheim/Documents/DS4DM_backend/ds4dm_webservice/DS4DM/DS4DM_webservice/conf/routes
+// @DATE:Wed Mar 28 11:05:28 CEST 2018
 
 import play.api.mvc.{ QueryStringBindable, PathBindable, Call, JavascriptLiteral }
 import play.core.routing.{ HandlerDef, ReverseRouteContext, queryString, dynamicString }
@@ -20,16 +20,16 @@ package controllers {
     }
 
   
+    // @LINE:19
+    def extendedSearch(repository:String): Call = {
+      import ReverseRouteContext.empty
+      Call("POST", _prefix + { _defaultPrefix } + "search" + queryString(List(Some(implicitly[QueryStringBindable[String]].unbind("repository", repository)))))
+    }
+  
     // @LINE:33
     def fetchTablePOST(repositoryName:String): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "fetchTablePOST" + queryString(List(Some(implicitly[QueryStringBindable[String]].unbind("repositoryName", repositoryName)))))
-    }
-  
-    // @LINE:45
-    def Test1(): Call = {
-      import ReverseRouteContext.empty
-      Call("POST", _prefix + { _defaultPrefix } + "test1")
     }
   
     // @LINE:7
@@ -44,31 +44,7 @@ package controllers {
       Call("POST", _prefix + { _defaultPrefix } + "suggestAttributes")
     }
   
-    // @LINE:29
-    def fetchTable_T2DGoldstandard(name:String): Call = {
-      import ReverseRouteContext.empty
-      Call("GET", _prefix + { _defaultPrefix } + "fetchTable" + queryString(List(Some(implicitly[QueryStringBindable[String]].unbind("name", name)))))
-    }
-  
-    // @LINE:23
-    def extendedSearch_T2DGoldstandard(): Call = {
-      import ReverseRouteContext.empty
-      Call("POST", _prefix + { _defaultPrefix } + "search")
-    }
-  
     // @LINE:40
-    def generateCorrespondences(repository:String): Call = {
-      import ReverseRouteContext.empty
-      Call("POST", _prefix + { _defaultPrefix } + "generateCorrespondences" + queryString(List(Some(implicitly[QueryStringBindable[String]].unbind("repository", repository)))))
-    }
-  
-    // @LINE:46
-    def Test2(): Call = {
-      import ReverseRouteContext.empty
-      Call("POST", _prefix + { _defaultPrefix } + "test2")
-    }
-  
-    // @LINE:41
     def deleteRepository(repository:String): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "deleteRepository" + queryString(List(Some(implicitly[QueryStringBindable[String]].unbind("repository", repository)))))
@@ -112,7 +88,13 @@ package controllers {
       Call("GET", _prefix + { _defaultPrefix } + "getRepositoryStatistics" + queryString(List(Some(implicitly[QueryStringBindable[String]].unbind("repository", repository)))))
     }
   
-    // @LINE:43
+    // @LINE:30
+    def fetchTable(name:String, repository:String): Call = {
+      import ReverseRouteContext.empty
+      Call("GET", _prefix + { _defaultPrefix } + "fetchTable" + queryString(List(Some(implicitly[QueryStringBindable[String]].unbind("name", name)), Some(implicitly[QueryStringBindable[String]].unbind("repository", repository)))))
+    }
+  
+    // @LINE:42
     def getUploadStatus(repository:String, uploadID:String): Call = {
       import ReverseRouteContext.empty
       Call("POST", _prefix + { _defaultPrefix } + "getUploadStatus" + queryString(List(Some(implicitly[QueryStringBindable[String]].unbind("repository", repository)), Some(implicitly[QueryStringBindable[String]].unbind("uploadID", uploadID)))))

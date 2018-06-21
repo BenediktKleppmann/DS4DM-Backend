@@ -62,11 +62,11 @@ public class WebTableMatcher {
 		return ensemble.getResult();
 	}
 	
-	public Processable<Correspondence<MatchableTableRow, Matchable>> matchRecords(DataSet<MatchableTableRow, MatchableTableColumn> query, DataSet<MatchableTableRow, MatchableTableColumn> tables) {
+	public Processable<Correspondence<MatchableTableRow, Matchable>> matchRecords(DataSet<MatchableTableRow, MatchableTableColumn> query, DataSet<MatchableTableRow, MatchableTableColumn> tables, Double minimumInstanceSimilarity) {
 		
 		MatchingEngine<MatchableTableRow, MatchableTableColumn> engine = new MatchingEngine<>();
 
-		Processable<Correspondence<MatchableTableRow, MatchableValue>> valueCors = engine.runSimpleIdentityResolution(query, tables, new InstanceBasedRecordBlocker<>(new WebTableRowEntityLabelValueGenerator()), new VotingAggregator<>(false, 1, 1.0));
+		Processable<Correspondence<MatchableTableRow, MatchableValue>> valueCors = engine.runSimpleIdentityResolution(query, tables, new InstanceBasedRecordBlocker<>(new WebTableRowEntityLabelValueGenerator()), new VotingAggregator<>(false, 1, minimumInstanceSimilarity));
 		
 		return Correspondence.toMatchable(valueCors);
 		

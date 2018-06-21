@@ -1,26 +1,22 @@
-/** 
+/*
+ * Copyright (c) 2018 Data and Web Science Group, University of Mannheim, Germany (http://dws.informatik.uni-mannheim.de/)
  *
- * Copyright (C) 2015 Data and Web Science Group, University of Mannheim, Germany (code@dwslab.de)
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- * 		http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
  */
+ 
 package unconstrainedSearch;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +36,8 @@ import de.uni_mannheim.informatik.dws.winter.utils.query.Q;
 import de.uni_mannheim.informatik.dws.winter.webtables.Table;
 import de.uni_mannheim.informatik.dws.winter.webtables.TableColumn;
 import de.uni_mannheim.informatik.dws.winter.webtables.TableRow;
+import tests.SaveCorrespondencesToCsv;
+import tests.SaveTableToCsv;
 import uploadTable.additionalWinterClasses.MatchableTableColumn;
 import uploadTable.additionalWinterClasses.MatchableTableRow;
 
@@ -154,7 +152,8 @@ public class SearchJoinSchemaConsolidator {
 	protected Pair<Table, Map<MatchableTableColumn, TableColumn>> createReconstructedTable(
 			int tableId, 
 			Map<Collection<MatchableTableColumn>, 
-			MatchableTableColumn> attributeClusters) {
+			MatchableTableColumn> attributeClusters,
+			Table queryTable) {
 		Table table = new Table();
 		table.setPath(Integer.toString(tableId));
 		table.setTableId(tableId);
@@ -188,7 +187,7 @@ public class SearchJoinSchemaConsolidator {
 			// use the most frequent header as the header for the merged column
 			Distribution<String> headers = Distribution.fromCollection(schemaCluster, new MatchableTableColumn.ColumnHeaderProjection());
 //			String newHeader = headers.getMode();
-			String newHeader = getMostFrequentHeaderForCluster(schemaCluster);
+			String newHeader = getMostFrequentHeaderForCluster(schemaCluster, queryTable);
 			c.setHeader(newHeader);
 			c.setSynonyms(headers.getElements());
 			
@@ -219,12 +218,26 @@ public class SearchJoinSchemaConsolidator {
 		return new Pair<Table, Map<MatchableTableColumn,TableColumn>>(table, columnMapping);
 	}
 	
-	protected String getMostFrequentHeaderForCluster(Collection<MatchableTableColumn> schemaCluster) {
+	protected String getMostFrequentHeaderForCluster(Collection<MatchableTableColumn> schemaCluster, Table queryTable) {
+		
+		// Make list of query table header names		
+		List<String> queryTableColumnNames = new LinkedList<String>();
+		for (TableColumn queryTableColumn: queryTable.getColumns()){
+			queryTableColumnNames.add(queryTableColumn.getHeader());
+		}
+		
 		Map<String, Integer> numOriginalColumnsPerHeader = new HashMap<>();
 		for(MatchableTableColumn c : schemaCluster) {
 			int originalColumns = web.get(c.getTableId()).getSchema().get(c.getColumnIndex()).getProvenance().size();
 			MapUtils.add(numOriginalColumnsPerHeader, c.getHeader(), originalColumns);
+			
+			// if there's a column from the query table occurs, use that			
+			if (queryTableColumnNames.contains(c.getHeader())) {
+				return c.getHeader();
+			}
 		}
+		
+		
 		return MapUtils.max(numOriginalColumnsPerHeader);
 	}
 	
@@ -276,15 +289,26 @@ public class SearchJoinSchemaConsolidator {
 			Processable<MatchableTableRow> queryRecords,
 			Processable<MatchableTableRow> tablesRecords,
 			Processable<MatchableTableColumn> attributes, 
-			Processable<Correspondence<MatchableTableColumn, Matchable>> schemaCorrespondences) {
+			Processable<Correspondence<MatchableTableColumn, Matchable>> schemaCorrespondences,
+			Table queryTable) {
 		
 			
 		Map<Collection<MatchableTableColumn>, MatchableTableColumn> attributeClusters = getAttributeClusters(attributes, schemaCorrespondences);
 		
-		Pair<Table, Map<MatchableTableColumn, TableColumn>> reconstruction = createReconstructedTable(0, attributeClusters);
-
+		// TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv		
+//		SaveCorrespondencesToCsv.save(attributeClusters, "attributeClusters");
+		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+		Pair<Table, Map<MatchableTableColumn, TableColumn>> reconstruction = createReconstructedTable(0, attributeClusters, queryTable);
+		
+		// TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv		
+//		SaveCorrespondencesToCsv.save(reconstruction, "reconstruction");
+		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		Table template = reconstruction.getFirst();
 		Table queryConsolidated = populateTable(template.copySchema(), reconstruction.getSecond(), queryRecords);
+		
+		// TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv		
+//		SaveTableToCsv.save(queryConsolidated, "queryConsolidated1");
+		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^		
 		
 		Table tablesConsolidated = populateTable(template.copySchema(), reconstruction.getSecond(), tablesRecords);
 		tablesConsolidated.setTableId(1);
@@ -294,6 +318,7 @@ public class SearchJoinSchemaConsolidator {
 	
 	public Table removeSparseColumns(Table t, double minDensity) throws Exception {
 		
+	
 		Set<TableColumn> sparseColumns = new HashSet<>();
 		
 		for(TableColumn c : t.getColumns()) {
@@ -309,6 +334,7 @@ public class SearchJoinSchemaConsolidator {
 			}
 			
 			double density = values / (double)t.getRows().size();
+			
 			
 			if(density<minDensity) {
 				sparseColumns.add(c);

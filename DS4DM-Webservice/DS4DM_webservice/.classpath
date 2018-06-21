@@ -124,5 +124,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_121"/>
 	<classpathentry kind="lib" path="C:/Users/UNI-Mannheim/Documents/DS4DM_backend/ds4dm_webservice/DS4DM/DS4DM_webservice/lib/commons-codec-1.11.jar"/>
 	<classpathentry kind="lib" path="C:/Users/UNI-Mannheim/Documents/DS4DM_backend/ds4dm_webservice/DS4DM/DS4DM_webservice/lib/opencsv-4.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/UNI-Mannheim/Documents/DS4DM_backend/ds4dm_webservice/DS4DM/DS4DM_webservice/lib/javafx-common.jar"/>
+	<classpathentry kind="lib" path="C:/Users/UNI-Mannheim/Documents/DS4DM_backend/ds4dm_webservice/DS4DM/DS4DM_webservice/lib/winter-1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

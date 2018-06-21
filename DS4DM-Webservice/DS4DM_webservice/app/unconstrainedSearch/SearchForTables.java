@@ -1,4 +1,15 @@
-package unconstrainedSearch;
+/*
+ * Copyright (c) 2018 Data and Web Science Group, University of Mannheim, Germany (http://dws.informatik.uni-mannheim.de/)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and limitations under the License.
+ */
+ package unconstrainedSearch;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +45,7 @@ public class SearchForTables {
 		System.out.println("Unconstrianed Search3");
 		try{
 
-			String indexPath = "/home/bkleppma/ds4dm_webservice/DS4DM_experimental/DS4DM/DS4DM_webservice/public/repositories/" + repositoryName + "/indexes/KeyColumnIndex";
+			String indexPath = "public/repositories/" + repositoryName + "/indexes/KeyColumnIndex";
 			Directory dir = FSDirectory.open(new File(indexPath));
 			IndexReader indexReader = DirectoryReader.open(dir);
 			IndexSearcher indexSearcher = new IndexSearcher(indexReader);
@@ -48,25 +59,25 @@ public class SearchForTables {
 			String originalKeyColumnString = StringUtils.join(keyColumn, " ");
 			originalKeyColumnString = originalKeyColumnString.replaceAll("[^A-Za-z0-9 ]", "");
 			String queryString  = uploadTable.FindCorrespondences.formatQueryString(originalKeyColumnString, 3);
+			queryString = queryString.trim();
 
 			
 			Integer numResults = 1000;
-			System.out.println("Unconstrianed Search3.11");
 			numResults = queryTable.getMaximalNumberOfTables();
-			System.out.println("Unconstrianed Search4:    " + queryString);
-			
 			Query q = queryParser.parse(queryString);
-			System.out.println("Unconstrianed Search5");
 			ScoreDoc[] hits = indexSearcher.search(q, numResults).scoreDocs;
-			System.out.println("Unconstrianed Search6.1");
-				
+			
+			Double minimumKeyColumnSimilarity = queryTable.getMinimumKeyColumnSimilarity();
+			if (minimumKeyColumnSimilarity == null) minimumKeyColumnSimilarity = 0.6;
+			
 			if(hits != null)
 			{
 				for (int i = 0; i < hits.length; i++) {
-					
-					Document doc = indexSearcher.doc(hits[i].doc);			
-					foundTablenames.add(doc.getField("tableHeader").stringValue());
-					System.out.println("found table: " + doc.getField("tableHeader").stringValue() );
+					if (hits[i].score >= minimumKeyColumnSimilarity){
+						Document doc = indexSearcher.doc(hits[i].doc);	
+						foundTablenames.add(doc.getField("tableHeader").stringValue());
+						System.out.println("found table: " + doc.getField("tableHeader").stringValue() );
+					}						
 				}
 	
 			} else System.out.println("For this table no matches were found in the KeyColumnIndex");
