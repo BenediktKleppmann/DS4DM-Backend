@@ -6,10 +6,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -29,6 +33,8 @@ import de.uni_mannheim.informatik.additionalWinterClasses.MatchableTableRow;
 import de.uni_mannheim.informatik.additionalWinterClasses.WebTableDataSetLoader;
 import de.uni_mannheim.informatik.dws.ds4dm.customMatchingRules.KeyColumnComparatorJaccard;
 import de.uni_mannheim.informatik.dws.ds4dm.customMatchingRules.NonKeyColumnComparator_withDType;
+import de.uni_mannheim.informatik.dws.ds4dm.customSimilarity.InverseExponentialDateSimilarity;
+import de.uni_mannheim.informatik.dws.ds4dm.customSimilarity.NumericDeviationSimilarity;
 import de.uni_mannheim.informatik.dws.winter.matching.MatchingEngine;
 import de.uni_mannheim.informatik.dws.winter.matching.MatchingEvaluator;
 import de.uni_mannheim.informatik.dws.winter.matching.aggregators.VotingAggregator;
@@ -39,6 +45,7 @@ import de.uni_mannheim.informatik.dws.winter.model.Correspondence;
 import de.uni_mannheim.informatik.dws.winter.model.DataSet;
 import de.uni_mannheim.informatik.dws.winter.model.Matchable;
 import de.uni_mannheim.informatik.dws.winter.processing.Processable;
+import de.uni_mannheim.informatik.dws.winter.processing.ProcessableCollection;
 import de.uni_mannheim.informatik.dws.winter.similarity.date.NormalisedDateSimilarity;
 import de.uni_mannheim.informatik.dws.winter.similarity.numeric.DeviationSimilarity;
 import de.uni_mannheim.informatik.dws.winter.similarity.string.TokenizingJaccardSimilarity;
@@ -135,6 +142,14 @@ public class Main {
 	 */
 	public static void main(String[] args) throws Exception{
 
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+		System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+		System.out.println("Starting Create Correspondence Files");
+		System.out.println(dateFormat.format(new Date())); //2016/11/16 12:08:43
+		System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+		System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+		
 		
 		if (args.length!=4){
 			System.out.println("=======================================================================================");
@@ -156,15 +171,18 @@ public class Main {
 			String blockSize = args[3];
 			Integer numResults = Integer.valueOf(blockSize);
 			
+//			String indexFolderPath = "C:/Users/UNI-Mannheim/Documents/Test Scripts/2017-08-04 evaluate indexing of wikitables/indexFolder" ;
+//			String datafilePath = "C:/Users/UNI-Mannheim/Documents/Test Scripts/temporary files/2017-08-04/tables" ;
+//			String correspondenceFolderPath = "C:/Users/UNI-Mannheim/Documents/Test Scripts/2017-08-04 evaluate indexing of wikitables/correspondenceFiles";
+//			Integer numResults = 5;
+			
+			
+			
 			
 			// more Parameters
 			int maxEditDistance = 3;
 			
-			// for Evaluation....
-			boolean deternimePrecisionAndRecall = false;
-			HashMap<String, String> fileLocationsForEvaluation = new HashMap<String, String>();
-			fileLocationsForEvaluation.put("goldstandardFileLocation", "");
-			fileLocationsForEvaluation.put("precisionAndRecallOutputFile", "");
+
 			
 			
 
@@ -177,103 +195,228 @@ public class Main {
 			Directory directory = FSDirectory.open(new File(indexFolderPath + "/KeyColumnIndex/"));
 	        DirectoryReader indexReader = DirectoryReader.open(directory);
 	        IndexSearcher indexSearcher = new IndexSearcher(indexReader);
-	        System.out.println("Length = " + indexReader.maxDoc());
+	        System.out.println("Length = " + String.valueOf(indexReader.maxDoc()));
 	        
-
+	      
 		     
 		    // Make HashMap of blocked Tables ===================================================== 
 	        // loop through all tables in the index, to create blockedTableCombinations
-	        
-	        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	        System.out.println("determining blocked tables... [" + dateFormat.format(new Date()) + "]");
 	        HashMap<String,HashSet<String>> blockedTableCombinations = new HashMap<String,HashSet<String>>();
 	        
+	        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//	        CSVWriter writer = new CSVWriter(new FileWriter("/home/bkleppma/ds4dm_webservice/DS4DM_experimental/DS4DM/DS4DM_webservice/public/exampleData/yourfile2.csv"), '\t');
+//	        String[] entries = { "test1: " + String.valueOf(indexReader.maxDoc())};
+//	        writer.writeNext(entries);
+	        CSVWriter writer = new CSVWriter(new FileWriter("/home/bkleppma/create correspondences with known blocking/blockings.csv"), '\t');
+	        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      
 		    for (int i=0; i<indexReader.maxDoc(); i++) {
 			    Document doc = indexReader.document(i);
-			    
+		        
+			    System.out.println("finding the blocked partner tables for Table in lucene document " + String.valueOf(i));
 			    // get the table-values
 			    String originalTableHeader =doc.getFields("tableHeader")[0].stringValue();		
 				String originalKeyColumnString =doc.getFields("keyColumnString")[0].stringValue();
 				String queryString  = formatQueryString(originalKeyColumnString, maxEditDistance);
-
+ 
+		        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//		        String[] entries2 = {"test2: " + String.valueOf(i) + " " +  originalTableHeader};
+//		        writer.writeNext(entries2);
+		        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+				
 				
 				if(queryString.trim().length()>0) {
 				    QueryParser queryParser = new QueryParser(Version.LUCENE_46, "keyColumnString", new StandardAnalyzer(Version.LUCENE_46));
 					Query q = queryParser.parse(queryString);
 					ScoreDoc[] hits = indexSearcher.search(q, numResults).scoreDocs;
 					
+			        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//			        String[] entries3 = {"test3: " + String.valueOf(hits.length)};
+//			        writer.writeNext(entries3);
+			        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+					
+					
 					for (ScoreDoc hit : hits){
 						Document foundDoc = indexSearcher.doc(hit.doc);
-						if (! foundDoc.getFields("tableHeader")[0].stringValue().equals(originalTableHeader)){
-							
-
-							String candidateTableHeader =  foundDoc.getFields("tableHeader")[0].stringValue();
-							
-							if(! originalTableHeader.equals(candidateTableHeader)){
-								
-								// sort the tables  (table1 < table2)
-								String table1 = null;
-								String table2 = null;
-								if(originalTableHeader.compareTo(candidateTableHeader)<0){
-									table1 = originalTableHeader;
-									table2 = candidateTableHeader;
-								} else if(originalTableHeader.compareTo(candidateTableHeader)>0){
-									table1 = candidateTableHeader;
-									table2 = originalTableHeader;
-								}
-								
-								// append to HashMap
-								HashSet<String> correspondingTables = blockedTableCombinations.get(table1);
-								if (correspondingTables==null){
-									correspondingTables = new HashSet<String>();
-									correspondingTables.add(table2);	
-								}else{
-									correspondingTables.add(table2);
-								}	
-								blockedTableCombinations.put(table1,correspondingTables);
-							}
-								
-						}
 						
-
+						
+				        String candidateTableHeader =  foundDoc.getFields("tableHeader")[0].stringValue();
+				        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//				        String[] entries4 = {"test4: " + candidateTableHeader};
+//				        writer.writeNext(entries4);
+				        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+				        
+				        
+						if (! candidateTableHeader.equals(originalTableHeader)){
+							
+			
+					        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//					        String[] entries5 = {"test5"};
+//					        writer.writeNext(entries5);
+					        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+							
+							// sort the tables  (table1 < table2)
+							String table1 = null;
+							String table2 = null;
+							if(originalTableHeader.compareTo(candidateTableHeader)<0){
+								table1 = originalTableHeader;
+								table2 = candidateTableHeader;
+							} else if(originalTableHeader.compareTo(candidateTableHeader)>0){
+								table1 = candidateTableHeader;
+								table2 = originalTableHeader;
+							}
+							
+					        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//					        String[] entries6 = {"test6"};
+//					        writer.writeNext(entries6);
+					        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+					        
+							// append to HashMap
+							HashSet<String> correspondingTables = blockedTableCombinations.get(table1);
+							if (correspondingTables==null){
+								correspondingTables = new HashSet<String>();
+								correspondingTables.add(table2);	
+							}else{
+								correspondingTables.add(table2);
+							}	
+							blockedTableCombinations.put(table1,correspondingTables);
+							
+					        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+							
+							List<String> newRowList = new ArrayList<String>(correspondingTables);
+							newRowList.add(0, table1);
+							
+							String[] newRowArray = new String[newRowList.size()];
+							newRowArray = newRowList.toArray(newRowArray);
+							
+					        writer.writeNext(newRowArray);
+					        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+						}
+				        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//				        String[] entries8 = {"test8"};
+//				        writer.writeNext(entries8);
+				        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 					}
-				}    
-			} 
+			        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//			        String[] entries9 = {"test9"};
+//			        writer.writeNext(entries9);
+			        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+				}   
+		    }	
+
+				
 		    
+	        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//	        String[] entries10 = {"test10"};
+//	        writer.writeNext(entries10);
+	        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		    
 		    // Loop through tables in HashMap and find Correspondences between them=====================================================
 		    System.out.println("finding correspondences between the blocked tables... [" + dateFormat.format(new Date()) + "]");
 		    WebTableDataSetLoader loader = new WebTableDataSetLoader();
 		    CsvTableParser csvParser = new CsvTableParser();
-		     
-
+	        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//	        String[] entries11 = {"test11: " + String.valueOf(blockedTableCombinations.keySet().size())};
+//	        writer.writeNext(entries11);
+	        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	        
 		    System.out.println(blockedTableCombinations);
-
 		    	
 		    for (String tableName1 : blockedTableCombinations.keySet()) {
 		    	
-		    	
+		        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//		        String[] entries115 = {"test11.5: "+ tableName1};
+//		        writer.writeNext(entries115);
+		        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		    	File file1 = new File(datafilePath + "/" + tableName1);
 				Table table1 = csvParser.parseTable(file1);
 				DataSet<MatchableTableRow, MatchableTableColumn> data1 = loader.createTableDataSet(table1);
 				
 				
 		    	HashSet<String> correspondingTables = blockedTableCombinations.get(tableName1);
+		        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//		        String[] entries12 = {"test12: "+ String.valueOf(correspondingTables.size())};
+//		        writer.writeNext(entries12);
+		        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		    	for (String tableName2 : correspondingTables) {
 		    	    
+			        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//			        String[] entries13 = {"test13: " + tableName2};
+//			        writer.writeNext(entries13);
+			        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 			    	File file2 = new File(datafilePath + "/" + tableName2);
 					Table table2 = csvParser.parseTable(file2);
 					DataSet<MatchableTableRow, MatchableTableColumn> data2 = loader.createTableDataSet(table2);
 		    		
-					Processable<Correspondence<MatchableTableRow, MatchableTableColumn>> instanceCorrespondences = getInstanceMatches(data1, data2, file1, file2, correspondenceFolderPath, deternimePrecisionAndRecall, fileLocationsForEvaluation);
+					Processable<Correspondence<MatchableTableRow, MatchableTableColumn>> instanceCorrespondences = getInstanceMatches(data1, data2, file1, file2, correspondenceFolderPath);
+			        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//			        String[] entries14 = {"test14: " + String.valueOf(instanceCorrespondences.get().size())};
+//			        writer.writeNext(entries14);
+			        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+					
 					if (instanceCorrespondences.get().size()>0){
-						getDuplicateBasedSchemaMatches(data1, data2, file1, file2, instanceCorrespondences, correspondenceFolderPath);	
+						
+						Processable<Correspondence<MatchableTableRow, MatchableTableColumn>> instanceCorrespondences_short = new ProcessableCollection<Correspondence<MatchableTableRow, MatchableTableColumn>>();
+				        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//				        String[] entries15 = {"test15"};
+//				        writer.writeNext(entries15);
+				        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+						if (instanceCorrespondences.get().size()>300){
+					        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//					        String[] entries16 = {"test16"};
+//					        writer.writeNext(entries16);
+					        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+							Integer counter =  0;
+							for (Correspondence<MatchableTableRow, MatchableTableColumn> instanceCorrespondence: instanceCorrespondences.get()){
+								counter ++;
+								instanceCorrespondences_short.add(instanceCorrespondence);
+								if (counter >300) break;
+							}
+						} else {
+					        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//					        String[] entries18 = {"test18"};
+//					        writer.writeNext(entries18);
+					        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+							instanceCorrespondences_short = instanceCorrespondences;
+						}
+				        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//				        String[] entries19 = {"test19: " + String.valueOf(instanceCorrespondences_short.get().size())};
+//				        writer.writeNext(entries19);
+				        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+						System.out.println(String.valueOf(instanceCorrespondences_short.get().size()));
+						getDuplicateBasedSchemaMatches(data1, data2, file1, file2, instanceCorrespondences_short, correspondenceFolderPath);	
+				        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//				        String[] entries20 = {"test20"};
+//				        writer.writeNext(entries20);
+				        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 					}
+			        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//			        String[] entries21 = {"test21"};
+//			        writer.writeNext(entries21);
+			        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		    	}
+		        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//		        String[] entries22 = {"test22"};
+//		        writer.writeNext(entries22);
+		        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		    }
-		}
+	        // TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//	        String[] entries23 = {"test23"};
+//	        writer.writeNext(entries23);
+	        writer.close();
+	        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 		
+		
+	System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+	System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+	System.out.println("End-of Create Correspondence Files");
+	System.out.println(dateFormat.format(new Date())); //2016/11/16 12:08:43
+	System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+	System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
 	}
+}	
 
 	
 	
@@ -309,17 +452,18 @@ public class Main {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Processable<Correspondence<MatchableTableRow, MatchableTableColumn>> getInstanceMatches(DataSet<MatchableTableRow, MatchableTableColumn> data1,  DataSet<MatchableTableRow, MatchableTableColumn> data2, File file1, File file2, String correspondenceFolderPath, boolean deternimePrecisionAndRecall, HashMap<String, String> fileLocationsForEvaluation) throws Exception {
+	public static Processable<Correspondence<MatchableTableRow, MatchableTableColumn>> getInstanceMatches(DataSet<MatchableTableRow, MatchableTableColumn> data1,  DataSet<MatchableTableRow, MatchableTableColumn> data2, File file1, File file2, String correspondenceFolderPath) throws Exception {
 		
 
 		
 		// create a matching rule
-		LinearCombinationMatchingRule<MatchableTableRow, MatchableTableColumn> matchingRule = new LinearCombinationMatchingRule<>(0.7);
+		LinearCombinationMatchingRule<MatchableTableRow, MatchableTableColumn> matchingRule = new LinearCombinationMatchingRule<>(0.5);
 		
 		// add comparators
 		matchingRule.addComparator(new KeyColumnComparatorJaccard(), 0.5);
 		matchingRule.addComparator(new NonKeyColumnComparator_withDType(), 0.5);
-		
+		matchingRule.setFinalThreshold(0.1);
+
 		
 		// create a blocker (blocking strategy)
 		NoBlocker<MatchableTableRow, MatchableTableColumn> blocker = new NoBlocker<MatchableTableRow, MatchableTableColumn>();
@@ -335,39 +479,22 @@ public class Main {
 		
 		
 		// write the correspondences to the output file
-		System.out.println("===============Save " + correspondences.get().size() + " instance correspondences to file for " + file1.getName() + "  " + file2.getName() + "   ========================");
-		String instanceCorrespondencesFilename = correspondenceFolderPath + "/instanceCorrespondences/" + file1.getName().replaceAll(".csv", "") + "__" + file2.getName();
-        CSVWriter csvwriter = new CSVWriter(new FileWriter(instanceCorrespondencesFilename), ',');
-        
-		for (Correspondence<MatchableTableRow, MatchableTableColumn> correspondence : correspondences.get()){
-			System.out.println(correspondence.getFirstRecord().getRowNumber() + " <--> " + correspondence.getSecondRecord().getRowNumber() + "  (" + String.format("%.4f", correspondence.getSimilarityScore()) + ")" );
-	        String[] newRow = {String.valueOf(correspondence.getFirstRecord().getRowNumber()),String.valueOf(correspondence.getSecondRecord().getRowNumber()),String.format("%.4f", correspondence.getSimilarityScore())};
-	        csvwriter.writeNext(newRow);
-		}
-		csvwriter.close();
-		
+		try {
+			System.out.println("===============Save " + correspondences.get().size() + " instance correspondences to file for " + file1.getName() + "  " + file2.getName() + "   ========================");
+			String instanceCorrespondencesFilename = correspondenceFolderPath + "/instanceCorrespondences/" + file1.getName().replaceAll(".csv", "") + "__" + file2.getName();
+	        CSVWriter csvwriter = new CSVWriter(new FileWriter(instanceCorrespondencesFilename), ',');
+	        
+			for (Correspondence<MatchableTableRow, MatchableTableColumn> correspondence : correspondences.get()){
+	//			System.out.println(correspondence.getFirstRecord().getRowNumber() + " <--> " + correspondence.getSecondRecord().getRowNumber() + "  (" + String.format("%.4f", correspondence.getSimilarityScore()) + ")" );
+		        String[] newRow = {String.valueOf(correspondence.getFirstRecord().getRowNumber()),String.valueOf(correspondence.getSecondRecord().getRowNumber()),String.format("%.4f", correspondence.getSimilarityScore())};
+		        csvwriter.writeNext(newRow);
+			}
+			csvwriter.close();
+		} catch (Exception e) {e.printStackTrace();	} 
 
 
 		
-		if (deternimePrecisionAndRecall){
 
-	
-			// load the gold standard (test set)
-			MatchingGoldStandard gsTest = new MatchingGoldStandard();
-			gsTest.loadFromCSVFile(new File(fileLocationsForEvaluation.get("goldstandardFileLocation")));
-//			gsTest.loadFromCSVFile(new File("usecase/movie/goldstandard/gs_academy_awards_2_actors_v2.csv"));
-	
-			// evaluate your result
-			MatchingEvaluator<MatchableTableRow, MatchableTableColumn> evaluator = new MatchingEvaluator<MatchableTableRow, MatchableTableColumn>(true);
-			Performance perfTest = evaluator.evaluateMatching(correspondences.get(),
-					gsTest);
-	
-			// print the evaluation result
-	        CSVWriter csvwriter2 = new CSVWriter(new FileWriter(fileLocationsForEvaluation.get("precisionAndRecallOutputFile"), true), ',');
-	        String[] newRow = {String.format("%.4f", perfTest.getPrecision()), String.format("%.4f", perfTest.getRecall()), String.format("%.4f", perfTest.getF1())};
-	        csvwriter2.writeNext(newRow);
-	        csvwriter2.close();
-		}
 		
 		return correspondences;
 	}
@@ -408,12 +535,14 @@ public class Main {
 
 			
 			// define the schema matching rule
-			VotingMatchingRule<MatchableTableColumn, MatchableTableRow> rule = new VotingMatchingRule<MatchableTableColumn, MatchableTableRow>(1.0) 
+			VotingMatchingRule<MatchableTableColumn, MatchableTableRow> rule = new VotingMatchingRule<MatchableTableColumn, MatchableTableRow>(0.5) 
 					{
 
 						private static final long serialVersionUID = 1L;
-						private DeviationSimilarity deviationSim = new DeviationSimilarity();
-						private NormalisedDateSimilarity dateSim = new NormalisedDateSimilarity();
+						private NumericDeviationSimilarity deviationSim = new NumericDeviationSimilarity();
+//						private DeviationSimilarity deviationSim = new DeviationSimilarity();
+						private InverseExponentialDateSimilarity dateSim = new InverseExponentialDateSimilarity();
+//						private NormalisedDateSimilarity dateSim = new NormalisedDateSimilarity();
 						private TokenizingJaccardSimilarity jaccardSim = new TokenizingJaccardSimilarity();
 
 						@Override
@@ -424,19 +553,24 @@ public class Main {
 						
 							if (c.getFirstRecord().get(a1.getColumnIndex())!=null && c.getSecondRecord().get(a2.getColumnIndex())!=null){
 								
+								
 								DataType datatype1 = a1.getType();
 								DataType datatype2 = a2.getType();
 
 								if (datatype1 == DataType.numeric && datatype2 == DataType.numeric)	{
-									similarity = deviationSim.calculate(Double.valueOf(c.getFirstRecord().get(a1.getColumnIndex()).toString()), Double.valueOf(c.getSecondRecord().get(a2.getColumnIndex()).toString()));
+									similarity = 0.05* deviationSim.calculate(Double.valueOf(c.getFirstRecord().get(a1.getColumnIndex()).toString()), Double.valueOf(c.getSecondRecord().get(a2.getColumnIndex()).toString()));
 								} else if (datatype1 == DataType.date && datatype2 == DataType.date)	{
+									dateSim.setHalvingTime(730.0);
 									similarity = dateSim.calculate( (DateTime) c.getFirstRecord().get(a1.getColumnIndex()), (DateTime) c.getSecondRecord().get(a2.getColumnIndex()));
 								} else if (datatype1 == DataType.bool && datatype2 == DataType.bool)	{
 									similarity = (c.getFirstRecord().get(a1.getColumnIndex())==c.getSecondRecord().get(a2.getColumnIndex()) ? 1 : 0);
 								} else{
 									similarity = jaccardSim.calculate(c.getFirstRecord().get(a1.getColumnIndex()).toString(), c.getSecondRecord().get(a2.getColumnIndex()).toString());
 								}	
+								
+								//System.out.println(a1.getHeader() + "<>" + a2.getHeader() + "||" + c.getFirstRecord().get(a1.getColumnIndex()).toString() + " <--> " + c.getSecondRecord().get(a2.getColumnIndex()).toString() + " (" + String.format("%.4f", similarity) + ")");
 							}
+							similarity = Math.sqrt(similarity);
 							return similarity;
 						}
 					};
@@ -445,7 +579,7 @@ public class Main {
 			// Initialize Matching Engine
 			MatchingEngine<MatchableTableRow, MatchableTableColumn> engine = new MatchingEngine<>();
 			// Execute the matching
-			Processable<Correspondence<MatchableTableColumn, MatchableTableRow>> correspondences = engine.runDuplicateBasedSchemaMatching(data1.getSchema(), data2.getSchema(), instanceCorrespondences, rule, null, new VotingAggregator<>(true, 1.0), new NoSchemaBlocker<>());
+			Processable<Correspondence<MatchableTableColumn, MatchableTableRow>> correspondences = engine.runDuplicateBasedSchemaMatching(data1.getSchema(), data2.getSchema(), instanceCorrespondences, rule, null, new VotingAggregator<>(true, 0.05), new NoSchemaBlocker<>());
 			
 			// print results
 			for(Correspondence<MatchableTableColumn, MatchableTableRow> cor : correspondences.get()) {

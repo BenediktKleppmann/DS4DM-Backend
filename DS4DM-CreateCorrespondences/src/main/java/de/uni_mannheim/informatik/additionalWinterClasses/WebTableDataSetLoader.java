@@ -14,6 +14,7 @@ package de.uni_mannheim.informatik.additionalWinterClasses;
 import java.util.Collection;
 
 import de.uni_mannheim.informatik.dws.winter.model.FusibleDataSet;
+import de.uni_mannheim.informatik.dws.winter.model.FusibleHashedDataSet;
 import de.uni_mannheim.informatik.dws.winter.model.FusibleParallelHashedDataSet;
 import de.uni_mannheim.informatik.dws.winter.webtables.Table;
 import de.uni_mannheim.informatik.dws.winter.webtables.TableColumn;
@@ -27,7 +28,8 @@ public class WebTableDataSetLoader {
 	
 	public FusibleDataSet<MatchableTableRow, MatchableTableColumn> createTableDataSet(Table t) {
 		
-		FusibleDataSet<MatchableTableRow,MatchableTableColumn> query = new FusibleParallelHashedDataSet<>();
+//		FusibleDataSet<MatchableTableRow,MatchableTableColumn> query = new FusibleParallelHashedDataSet<>();
+		FusibleDataSet<MatchableTableRow,MatchableTableColumn> query = new FusibleHashedDataSet<>();
 		
 		MatchableTableColumn[] cols = new MatchableTableColumn[t.getColumns().size()];
 		int colIdx = 0;

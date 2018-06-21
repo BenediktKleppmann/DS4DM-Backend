@@ -1,9 +1,13 @@
 package de.uni_mannheim.informatik.dws.ds4dm.customMatchingRules;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.joda.time.DateTime;
 
 import de.uni_mannheim.informatik.additionalWinterClasses.MatchableTableColumn;
 import de.uni_mannheim.informatik.additionalWinterClasses.MatchableTableRow;
+import de.uni_mannheim.informatik.dws.ds4dm.customSimilarity.InverseExponentialDateSimilarity;
 import de.uni_mannheim.informatik.dws.winter.matching.rules.Comparator;
 import de.uni_mannheim.informatik.dws.winter.matrices.SimilarityMatrix;
 import de.uni_mannheim.informatik.dws.winter.matrices.SparseSimilarityMatrixFactory;
@@ -12,6 +16,7 @@ import de.uni_mannheim.informatik.dws.winter.model.Correspondence;
 import de.uni_mannheim.informatik.dws.winter.model.Matchable;
 import de.uni_mannheim.informatik.dws.winter.preprocessing.datatypes.DataType;
 import de.uni_mannheim.informatik.dws.winter.similarity.date.NormalisedDateSimilarity;
+import de.uni_mannheim.informatik.dws.winter.similarity.date.WeightedDateSimilarity;
 import de.uni_mannheim.informatik.dws.winter.similarity.numeric.DeviationSimilarity;
 import de.uni_mannheim.informatik.dws.winter.similarity.string.TokenizingJaccardSimilarity;
 
@@ -42,7 +47,7 @@ public class NonKeyColumnComparator_withDType implements Comparator<MatchableTab
 	private static final long serialVersionUID = 1L;
 	
 	private DeviationSimilarity deviationSim = new DeviationSimilarity();
-	private NormalisedDateSimilarity dateSim = new NormalisedDateSimilarity();
+	private InverseExponentialDateSimilarity dateSim = new InverseExponentialDateSimilarity();
 	private TokenizingJaccardSimilarity jaccardSim = new TokenizingJaccardSimilarity();
 	
 	@Override
@@ -52,6 +57,8 @@ public class NonKeyColumnComparator_withDType implements Comparator<MatchableTab
 			Correspondence<MatchableTableColumn, Matchable> schemaCorrespondences) {
 		
 		SimilarityMatrix<MatchableTableColumn> sim = new SparseSimilarityMatrixFactory().createSimilarityMatrix(0, 0);
+		
+		List<Double> listOfSimilarityScores = new LinkedList<Double>();
 		
 		for (int columnIndex1 = 0; columnIndex1< record1.getSchema().length; columnIndex1++){
 			for (int columnIndex2 = 0; columnIndex2< record2.getSchema().length; columnIndex2++){
@@ -65,23 +72,34 @@ public class NonKeyColumnComparator_withDType implements Comparator<MatchableTab
 					
 					double similarity = 0;
 					
+					String typeOfComparison = "";
 					if(record1.get(columnIndex1)!=null && record2.get(columnIndex2)!=null){
 						
 						if (datatype1 == DataType.numeric && datatype2 == DataType.numeric)	{
 							similarity = deviationSim.calculate(Double.valueOf(record1.get(columnIndex1).toString()), Double.valueOf(record2.get(columnIndex2).toString()));
+							typeOfComparison = "numbers";
 						} else if (datatype1 == DataType.date && datatype2 == DataType.date)	{
+							dateSim.setHalvingTime(730.0);
 							similarity = dateSim.calculate( (DateTime) record1.get(columnIndex1), (DateTime) record2.get(columnIndex2));
+							typeOfComparison = "dates";
 						} else if (datatype1 == DataType.bool && datatype2 == DataType.bool)	{
 							similarity = (record1.get(columnIndex1)==record2.get(columnIndex2) ? 1 : 0);
+							typeOfComparison = "booleans";
 						} else{
 							similarity = jaccardSim.calculate(record1.get(columnIndex1).toString(),record2.get(columnIndex2).toString());
+							typeOfComparison = "strings";
 						}
 					}
+					
+//					if (similarity !=0.0){
+//						System.out.println(String.format("comparing %s: '%s' <--> '%s' (%.4f)", typeOfComparison, String.valueOf(record1.get(columnIndex1)), String.valueOf(record2.get(columnIndex2)), similarity));
+//					}
+					
 					
 					if (!Double.isNaN(similarity)) {
 						
 						sim.add(c1, c2, similarity);
-						
+						listOfSimilarityScores.add(similarity);
 					}
 				}	
 			}
@@ -91,7 +109,23 @@ public class NonKeyColumnComparator_withDType implements Comparator<MatchableTab
 		
 		sim = bcm.match(sim);
 		
-		double finalSim = sim.getSum() / (double)sim.getNumberOfNonZeroElements();
+		double NumberOfNonZeroElements = (double)sim.getNumberOfNonZeroElements();
+		double finalSim = 0.0;
+		if (NumberOfNonZeroElements != 0.0){
+			finalSim = sim.getSum() / NumberOfNonZeroElements;
+		}
+		
+		
+		finalSim = Math.pow(finalSim,0.1);
+		
+
+//		for (double similarity: listOfSimilarityScores){
+//			if (similarity != 0.0 && finalSim==0.0){
+//				System.out.println("Herrecy!! the bloody BestChoiceMatching is fucking it up!!");
+//				System.out.println("Non-key Column: " + record1.getIdentifier() + " <--> " + record2.getIdentifier() + String.format(" (%.4f, %.4f)",  finalSim, similarity));
+//			}
+//		}
+		
 		
 		return finalSim;
 	}

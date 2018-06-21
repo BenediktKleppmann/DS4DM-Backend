@@ -37,10 +37,10 @@ public class KeyColumnComparatorJaccard implements Comparator<MatchableTableRow,
 			String subjectValue2 = record2.get(record2.getSubjectColumnIndex()).toString();
 			
 			similarity = sim.calculate(subjectValue1,subjectValue2);
-			
-			if (similarity>0.5){
-				System.out.println("Key Column: " + subjectValue1 + " <--> " + subjectValue2 + " (" + String.format("%.4f", similarity) + ")");
-			}
+			similarity = Math.pow(similarity,0.1);
+//			if (similarity>0.5){
+//				System.out.println("Key Column: " + subjectValue1 + " <--> " + subjectValue2 + " (" + String.format("%.4f", similarity) + ")");
+//			}
 		}
 
 		
