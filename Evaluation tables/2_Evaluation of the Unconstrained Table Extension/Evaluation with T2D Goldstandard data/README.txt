@@ -1,6 +1,6 @@
-=======================================================
-Evaluation of the Unconstrained Table Extension
-=======================================================
+==================================================================================
+Evaluation of the Unconstrained Table Extension with T2D Goldstandard data
+==================================================================================
 
 Each sub-folder in this folder corresponds to a different table extension-query that was performed using the Unconstrained Table Extension.
 
