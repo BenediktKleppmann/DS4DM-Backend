@@ -140,6 +140,7 @@ import extendedSearch.SearchForTablesX;
 //import model.QueryTable;
 import play.mvc.Controller;
 import tests.CsvTableParser_keepCase;
+import tests.SaveTableToCsv;
 import uploadTable.FindCorrespondences;
 import uploadTable.TableIndexer;
 import uploadTable.additionalWinterClasses.MatchableTableColumn;
@@ -613,25 +614,35 @@ public class ExtendTable extends Controller {
 	
 	
 	public Result test3(){
+		try{
+//			Process process = Runtime.getRuntime().exec("python public/exampleData/temp_tables/correlation_based_filtering.py  0.1 \"Museum\" \"Visitors 2010\"");
+			
+//			ProcessBuilder builder = new ProcessBuilder("python", "public/exampleData/temp_tables/correlation_based_filtering.py", "0.1", "Museum", "Visitors 2010"); 
+//			Process process = builder.start();
+			
+			Process process = Runtime.getRuntime().exec(new String[] { "bash", "-c", "python public/exampleData/temp_tables/correlation_based_filtering.py  0.1 \"Museum\" \"Visitors 2010\"" });
+		    Scanner scanner = new Scanner(process.getInputStream());
+		    
+		    while (scanner.hasNext()) {
+		    	System.out.println(scanner.nextLine());
+		    }
+			process.waitFor();
+			System.out.println("line3");
+			System.out.println(String.valueOf(process.exitValue()));
+	
+			int len;
+			if ((len = process.getErrorStream().available()) > 0) {
+			  byte[] buf = new byte[len];
+			  process.getErrorStream().read(buf);
+			  out.println("Command error:\t\""+new String(buf)+"\"");
+			}
 		
-		uploadTable.Table fusedTable = new uploadTable.Table();
-		String[][] relation = new String[3][4];
-		relation[0][0] = "0 ";
-		relation[1][0] = "1 ";
-		relation[2][0] = "2 ";
-		relation[0][1] = "";
-		relation[1][1] = "";
-		relation[2][1] = "";
-		relation[0][2] = null;
-		relation[1][2] = null;
-		relation[0][3] = "0 ";
-		relation[1][3] = "1 ";
-		relation[2][3] = "2 ";
+			
 
-		fusedTable.setRelation(relation);
-		Gson gson = new Gson();	
-		String return_string = gson.toJson(fusedTable, uploadTable.Table.class);
-		return ok(return_string);
+			
+			
+			return ok("done");
+		} catch (Exception e){e.printStackTrace();return ok("exception");}
 	}
 	
 	
@@ -655,7 +666,13 @@ public class ExtendTable extends Controller {
 	 */
 
 	public Result correlationBasedSearch(String repositoryName) throws IOException, InterruptedException{
-		System.out.println("Unconstrianed Search....");
+		
+		try{
+			FileOutputStream fileOutputStream = new FileOutputStream(new File("public/exampleData/test3.txt"));
+			System.setOut(new PrintStream(fileOutputStream));
+		}catch (FileNotFoundException e){e.printStackTrace();}
+		System.out.println("correlationBasedSearch....");
+		
 		if (repositoryName == null || repositoryName=="") repositoryName = "DefaultRepository";
 		
 
@@ -684,9 +701,12 @@ public class ExtendTable extends Controller {
 		/*******************************************************
 		 * Unconstrianed Search
 		 *******************************************************/
-		System.out.println("Unconstrianed Search");
+		System.out.println("Unconstrianed Search...");
 		Table fused = UnconstrainedSearch.getFusedTable(queryTableObject, repositoryName);
-
+		
+		// TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv		
+//		SaveTableToCsv.save(fused, "fused");
+		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^		
 	
 		/*******************************************************
 		 * save the fused-table to csv
@@ -731,18 +751,23 @@ public class ExtendTable extends Controller {
 		Double minimumCorrelation = queryTableObject.getMinimumCorrelation();
 		if (minimumCorrelation == null){minimumCorrelation = 0.4;}
 		
-		Process process = Runtime.getRuntime().exec("python public/exampleData/temp_tables/correlation_based_filtering.py  " + String.valueOf(minimumCorrelation) + " " + fused.getSubjectColumn().getHeader()  + " " + queryTableObject.getCorrelationAttribute());
+
+//		Process process = Runtime.getRuntime().exec("python public/exampleData/temp_tables/correlation_based_filtering.py  " + String.valueOf(minimumCorrelation) + " \"" + fused.getSubjectColumn().getHeader()  + "\" \"" + queryTableObject.getCorrelationAttribute() + "\"");
+//		Process process = new ProcessBuilder("python", "public/exampleData/temp_tables/correlation_based_filtering.py", String.valueOf(minimumCorrelation), fused.getSubjectColumn().getHeader(), queryTableObject.getCorrelationAttribute()).start();
+		
+		Process process = Runtime.getRuntime().exec(new String[] { "bash", "-c", "python public/exampleData/temp_tables/correlation_based_filtering.py " + String.valueOf(minimumCorrelation) + " '" + fused.getSubjectColumn().getHeader()  + "' '" + queryTableObject.getCorrelationAttribute() + "'" });
+		
 	    Scanner scanner = new Scanner(process.getInputStream());
 	    
 	    PrintWriter out = new PrintWriter("public/exampleData/temp_tables/test.txt");
-		out.println("public/exampleData/temp_tables/correlation_based_filtering.py  0.4");
-		out.println("line2");
+		System.out.println("python public/exampleData/temp_tables/correlation_based_filtering.py  " + String.valueOf(minimumCorrelation) + " '" + fused.getSubjectColumn().getHeader()  + "' '" + queryTableObject.getCorrelationAttribute() + "'" );
+		System.out.println("line2");
 	    while (scanner.hasNext()) {
-	    	out.println(scanner.nextLine());
+	    	System.out.println(scanner.nextLine());
 	    }
 		process.waitFor();
-		out.println("line3");
-		out.println(String.valueOf(process.exitValue()));
+		System.out.println("line3");
+		System.out.println(String.valueOf(process.exitValue()));
 
 		int len;
 		if ((len = process.getErrorStream().available()) > 0) {

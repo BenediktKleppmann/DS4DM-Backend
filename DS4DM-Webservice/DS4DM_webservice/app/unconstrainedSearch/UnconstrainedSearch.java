@@ -12,6 +12,7 @@
  package unconstrainedSearch;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,6 +22,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.opencsv.CSVWriter;
 
 import de.uni_mannheim.informatik.dws.winter.matching.aggregators.TopKCorrespondencesAggregator;
 import de.uni_mannheim.informatik.dws.winter.matching.rules.AggregateBySecondRecordRule;
@@ -46,14 +49,14 @@ import uploadTable.additionalWinterClasses.WebTableDataSetLoader;
 public class UnconstrainedSearch {
 
 	
-	public static Table getFusedTable(model.QueryTable queryTableObject, String repositoryName){
+	public static Table getFusedTable(model.QueryTable queryTableObject, String repositoryName) throws IOException{
 		
 		queryTableObject.saveToFile("public/exampleData/temp_query_table.csv");
 		CsvTableParser csvtableparser = new CsvTableParser();
 		Table queryTable = csvtableparser.parseTable(new File("public/exampleData/temp_query_table.csv"));
 		
 		// TESTING  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-		SaveTableToCsv.save(queryTable, "queryTable");
+//		SaveTableToCsv.save(queryTable, "queryTable");
 		// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		
 		Table fused = null;
@@ -85,8 +88,15 @@ public class UnconstrainedSearch {
 		List<String> foundTablenames = SearchForTables.search(queryTableObject, keyColumnIndex, repositoryName);
 		System.out.println("Unconstrianed Search7.1");
 
+
+		
 		if(foundTablenames!=null && foundTablenames.size()>0) {
 			System.out.println("Unconstrianed Search7.2");
+			
+//			TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+			CSVWriter csvwriter = new CSVWriter(new FileWriter("/home/bkleppma/ds4dm_webservice/DS4DM/DS4DM_webservice/public/exampleData/testTable.csv"), ';');
+//			^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 			
 			// load the tables from the search result
 			Collection<Table> tables = new LinkedList<>();
@@ -97,9 +107,18 @@ public class UnconstrainedSearch {
 					foundTable.setTableId(foundTableId++);
 					tablesById.put(foundTable.getTableId(), foundTable);
 					tables.add(foundTable);
+					//	TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+					String[] new_row = {foundTablename};
+					csvwriter.writeNext(new_row);
+					//	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^	
 				}
 			}
 
+//			TESTING vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+			csvwriter.close();
+//			^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+			
+			
 			// add the query table to the search results
 			// it will match the query table perfectly and make sure that all records are kept in the final result
 			// even if no other table contained a certain record
@@ -107,6 +126,9 @@ public class UnconstrainedSearch {
 			queryTable.setTableId(foundTableId);
 			tablesById.put(queryTable.getTableId(), queryTable);
 			tables.add(queryTable);
+			
+			
+
 			
 			/*******************************************************
 			 * SCHEMA MATCHING
@@ -119,7 +141,7 @@ public class UnconstrainedSearch {
 			FusibleDataSet<MatchableTableRow, MatchableTableColumn> tablesDS = loader.createTablesDataSet(tables);
 			
 			// TESTING  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-			SaveTableToCsv.save(queryDS, "queryDS");
+//			SaveTableToCsv.save(queryDS, "queryDS");
 			// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 			
 			// run schema matching
@@ -173,8 +195,9 @@ public class UnconstrainedSearch {
 				queryDS = loader.createQueryDataSet(queryConsolidated);
 				tablesDS = loader.createQueryDataSet(tablesConsolidated);
 				
+				
 				// TESTING  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-				SaveTableToCsv.save(queryDS, "queryDS2");
+//				SaveTableToCsv.save(queryDS, "queryDS2");
 				// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 				
 				// run identity resolution
@@ -203,7 +226,7 @@ public class UnconstrainedSearch {
 					fused = fuser.fuseTables(queryConsolidated, queryDS, tablesDS, recordCorrespondences);	
 						
 					// TESTING  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-					SaveTableToCsv.save(fused, "fused");
+//					SaveTableToCsv.save(fused, "fused");
 					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 					
 					Double minimumDensity = queryTableObject.getMinimumDensity();
@@ -211,7 +234,7 @@ public class UnconstrainedSearch {
 					fused = consolidator.removeSparseColumns(fused, minimumDensity);  // remove columns that are mostly NULL
 					
 					// TESTING  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-					SaveTableToCsv.save(fused, "fused2");
+//					SaveTableToCsv.save(fused, "fused2");
 					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 					
 				} catch (Exception e) {e.printStackTrace();}
